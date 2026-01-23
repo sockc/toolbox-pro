@@ -25,7 +25,8 @@ while true; do
   echo "4) 下载工具（aria2/rclone/yt-dlp等）"
   echo "5) SSH 工具（改密/改端口/root登录/安全模式）"
   echo "6) 防火墙（开关/放行/关闭/查看）"
-  echo "7) 反代工具（Caddy/NPM） 
+  echo "7) 反代工具（Caddy/NPM）"
+  echo "8) 系统急救菜单（DNS/网络/磁盘/Docker/日志）"
   echo "9) 手动更新（从 GitHub 拉最新）"
   echo "0) 退出"
   echo
@@ -39,6 +40,7 @@ while true; do
     5) run_mod "modules/ssh/ssh.sh" ;;
     6) run_mod "modules/firewall/firewall.sh" ;;
     7) run_mod "modules/proxy/proxy.sh" ;;
+    8) run_mod "modules/rescue/rescue.sh" ;;
     9) force_update_all; read -r -p "回车继续..." _ ;;
     0) echo "Bye 👋"; exit 0 ;;
     *) warn "无效选项"; sleep 1 ;;
