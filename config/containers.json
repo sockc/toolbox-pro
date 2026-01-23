@@ -1,7 +1,7 @@
 [
   { "name": "Portainer", "id": "portainer", "image": "portainer/portainer-ce:latest", "ports": ["9443:9443","9000:9000"], "volumes": ["portainer_data:/data","/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always" },
 
-  { "name": "Watchtower (自动更新容器)", "id": "watchtower", "image": "containrrr/watchtower:latest", "ports": [], "volumes": ["/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always --cleanup --schedule \"0 0 4 * * *\"" },
+  { "name": "Watchtower (自动更新)", "id": "watchtower", "image": "containrrr/watchtower:latest", "ports": [], "volumes": ["/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always --cleanup --schedule \"0 0 4 * * *\"" },
 
   { "name": "Nginx Proxy Manager", "id": "npm", "image": "jc21/nginx-proxy-manager:latest", "ports": ["80:80","81:81","443:443"], "volumes": ["/opt/apps/npm/data:/data","/opt/apps/npm/letsencrypt:/etc/letsencrypt"], "env": [], "extra": "--restart=always" },
 
@@ -11,19 +11,59 @@
 
   { "name": "Vaultwarden", "id": "vaultwarden", "image": "vaultwarden/server:latest", "ports": ["8080:80"], "volumes": ["/opt/apps/vaultwarden:/data"], "env": [], "extra": "--restart=always" },
 
-  { "name": "AdGuardHome", "id": "adguardhome", "image": "adguard/adguardhome:latest", "ports": ["3000:3000","53:53/tcp","53:53/udp","80:80","443:443"], "volumes": ["/opt/apps/adguard/work:/opt/adguardhome/work","/opt/apps/adguard/conf:/opt/adguardhome/conf"], "env": [], "extra": "--restart=always" },
+  { "name": "AdGuard Home", "id": "adguardhome", "image": "adguard/adguardhome:latest", "ports": ["3000:3000","53:53/tcp","53:53/udp","80:80","443:443"], "volumes": ["/opt/apps/adguard/work:/opt/adguardhome/work","/opt/apps/adguard/conf:/opt/adguardhome/conf"], "env": [], "extra": "--restart=always" },
 
-  { "name": "Home Assistant", "id": "homeassistant", "image": "ghcr.io/home-assistant/home-assistant:stable", "ports": ["8123:8123"], "volumes": ["/opt/apps/homeassistant:/config"], "env": [], "extra": "--restart=always --network=host" },
+  { "name": "Pi-hole", "id": "pihole", "image": "pihole/pihole:latest", "ports": ["53:53/tcp","53:53/udp","8082:80"], "volumes": ["/opt/apps/pihole/etc-pihole:/etc/pihole","/opt/apps/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Home Assistant", "id": "homeassistant", "image": "ghcr.io/home-assistant/home-assistant:stable", "ports": [], "volumes": ["/opt/apps/homeassistant:/config"], "env": [], "extra": "--restart=always --network=host" },
 
   { "name": "OpenList", "id": "openlist", "image": "openlistteam/openlist:latest", "ports": ["5244:5244"], "volumes": ["/opt/apps/openlist:/data"], "env": [], "extra": "--restart=always" },
 
-  { "name": "FileBrowser", "id": "filebrowser", "image": "filebrowser/filebrowser:latest", "ports": ["8081:80"], "volumes": ["/opt/apps/filebrowser:/srv","/opt/apps/filebrowser/db:/database"], "env": [], "extra": "--restart=always" },
+  { "name": "FileBrowser", "id": "filebrowser", "image": "filebrowser/filebrowser:latest", "ports": ["8081:80"], "volumes": ["/opt/apps/filebrowser/srv:/srv","/opt/apps/filebrowser/db:/database"], "env": [], "extra": "--restart=always" },
 
   { "name": "Syncthing", "id": "syncthing", "image": "syncthing/syncthing:latest", "ports": ["8384:8384","22000:22000/tcp","22000:22000/udp","21027:21027/udp"], "volumes": ["/opt/apps/syncthing:/var/syncthing"], "env": [], "extra": "--restart=always" },
 
   { "name": "Jellyfin", "id": "jellyfin", "image": "jellyfin/jellyfin:latest", "ports": ["8096:8096"], "volumes": ["/opt/apps/jellyfin/config:/config","/opt/apps/jellyfin/cache:/cache","/opt/media:/media"], "env": [], "extra": "--restart=always" },
 
-  { "name": "Immich (照片备份)", "id": "immich", "image": "ghcr.io/immich-app/immich-server:release", "ports": ["2283:2283"], "volumes": ["/opt/apps/immich/upload:/usr/src/app/upload"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+  { "name": "Plex", "id": "plex", "image": "lscr.io/linuxserver/plex:latest", "ports": ["32400:32400"], "volumes": ["/opt/apps/plex:/config","/opt/media:/media"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Emby", "id": "emby", "image": "lscr.io/linuxserver/emby:latest", "ports": ["8097:8096"], "volumes": ["/opt/apps/emby:/config","/opt/media:/media"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Navidrome (音乐)", "id": "navidrome", "image": "deluan/navidrome:latest", "ports": ["4533:4533"], "volumes": ["/opt/apps/navidrome/data:/data","/opt/music:/music"], "env": ["ND_SCANSCHEDULE=1h"], "extra": "--restart=always" },
+
+  { "name": "qBittorrent", "id": "qbittorrent", "image": "lscr.io/linuxserver/qbittorrent:latest", "ports": ["8083:8080","6881:6881","6881:6881/udp"], "volumes": ["/opt/apps/qbittorrent:/config","/opt/downloads:/downloads"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Transmission", "id": "transmission", "image": "lscr.io/linuxserver/transmission:latest", "ports": ["9091:9091","51413:51413","51413:51413/udp"], "volumes": ["/opt/apps/transmission:/config","/opt/downloads:/downloads"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "aria2-pro", "id": "aria2-pro", "image": "p3terx/aria2-pro:latest", "ports": ["6800:6800"], "volumes": ["/opt/apps/aria2:/config","/opt/downloads:/downloads"], "env": [], "extra": "--restart=always" },
+
+  { "name": "AriaNg", "id": "ariang", "image": "p3terx/ariang:latest", "ports": ["6880:6880"], "volumes": [], "env": [], "extra": "--restart=always" },
+
+  { "name": "FRP Server", "id": "frps", "image": "snowdreamtech/frps:latest", "ports": ["7000:7000","7500:7500"], "volumes": ["/opt/apps/frp/frps.ini:/etc/frp/frps.ini"], "env": [], "extra": "--restart=always" },
+
+  { "name": "FRP Client", "id": "frpc", "image": "snowdreamtech/frpc:latest", "ports": [], "volumes": ["/opt/apps/frp/frpc.ini:/etc/frp/frpc.ini"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Gitea (Compose推荐)", "id": "gitea", "image": "gitea/gitea:latest", "ports": ["3003:3000","222:22"], "volumes": ["/opt/apps/gitea:/data"], "env": ["USER_UID=1000","USER_GID=1000"], "extra": "--restart=always" },
+
+  { "name": "Gitea + DB (Compose)", "id": "gitea-stack", "image": "compose", "ports": [], "volumes": [], "env": [], "extra": "", "compose":
+"services:\n  db:\n    image: postgres:16\n    restart: always\n    environment:\n      POSTGRES_PASSWORD: changeme\n      POSTGRES_USER: gitea\n      POSTGRES_DB: gitea\n    volumes:\n      - /opt/apps/gitea-stack/db:/var/lib/postgresql/data\n  gitea:\n    image: gitea/gitea:latest\n    restart: always\n    depends_on:\n      - db\n    ports:\n      - \"3003:3000\"\n      - \"222:22\"\n    environment:\n      - GITEA__database__DB_TYPE=postgres\n      - GITEA__database__HOST=db:5432\n      - GITEA__database__NAME=gitea\n      - GITEA__database__USER=gitea\n      - GITEA__database__PASSWD=changeme\n    volumes:\n      - /opt/apps/gitea-stack/gitea:/data\n"
+  },
+
+  { "name": "Code Server (Web IDE)", "id": "code-server", "image": "lscr.io/linuxserver/code-server:latest", "ports": ["8444:8443"], "volumes": ["/opt/apps/code-server:/config","/opt:/workspace"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Docker Registry", "id": "registry", "image": "registry:2", "ports": ["5000:5000"], "volumes": ["/opt/apps/registry:/var/lib/registry"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Minio", "id": "minio", "image": "minio/minio:latest", "ports": ["9000:9000","9001:9001"], "volumes": ["/opt/apps/minio:/data"], "env": ["MINIO_ROOT_USER=admin","MINIO_ROOT_PASSWORD=changeme123"], "extra": "--restart=always server /data --console-address \":9001\"" },
+
+  { "name": "Redis", "id": "redis", "image": "redis:latest", "ports": ["6379:6379"], "volumes": ["/opt/apps/redis:/data"], "env": [], "extra": "--restart=always --appendonly yes" },
+
+  { "name": "PostgreSQL", "id": "postgres", "image": "postgres:16", "ports": ["5432:5432"], "volumes": ["/opt/apps/postgres:/var/lib/postgresql/data"], "env": ["POSTGRES_PASSWORD=changeme"], "extra": "--restart=always" },
+
+  { "name": "MariaDB", "id": "mariadb", "image": "mariadb:latest", "ports": ["3306:3306"], "volumes": ["/opt/apps/mariadb:/var/lib/mysql"], "env": ["MARIADB_ROOT_PASSWORD=changeme"], "extra": "--restart=always" },
+
+  { "name": "MongoDB", "id": "mongodb", "image": "mongo:latest", "ports": ["27017:27017"], "volumes": ["/opt/apps/mongodb:/data/db"], "env": [], "extra": "--restart=always" },
+
+  { "name": "MeiliSearch", "id": "meilisearch", "image": "getmeili/meilisearch:latest", "ports": ["7700:7700"], "volumes": ["/opt/apps/meilisearch:/meili_data"], "env": ["MEILI_MASTER_KEY=changeme"], "extra": "--restart=always" },
 
   { "name": "Grafana", "id": "grafana", "image": "grafana/grafana:latest", "ports": ["3000:3000"], "volumes": ["/opt/apps/grafana:/var/lib/grafana"], "env": [], "extra": "--restart=always" },
 
@@ -31,9 +71,43 @@
 
   { "name": "Node Exporter", "id": "node-exporter", "image": "prom/node-exporter:latest", "ports": ["9100:9100"], "volumes": [], "env": [], "extra": "--restart=always" },
 
-  { "name": "PostgreSQL", "id": "postgres", "image": "postgres:16", "ports": ["5432:5432"], "volumes": ["/opt/apps/postgres:/var/lib/postgresql/data"], "env": ["POSTGRES_PASSWORD=changeme"], "extra": "--restart=always" },
+  { "name": "Dozzle (容器日志Web)", "id": "dozzle", "image": "amir20/dozzle:latest", "ports": ["9999:8080"], "volumes": ["/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always" },
 
-  { "name": "MariaDB", "id": "mariadb", "image": "mariadb:latest", "ports": ["3306:3306"], "volumes": ["/opt/apps/mariadb:/var/lib/mysql"], "env": ["MARIADB_ROOT_PASSWORD=changeme"], "extra": "--restart=always" },
+  { "name": "Dashy (导航页)", "id": "dashy", "image": "lissy93/dashy:latest", "ports": ["4000:80"], "volumes": ["/opt/apps/dashy:/app/public"], "env": [], "extra": "--restart=always" },
 
-  { "name": "Redis", "id": "redis", "image": "redis:latest", "ports": ["6379:6379"], "volumes": ["/opt/apps/redis:/data"], "env": [], "extra": "--restart=always --appendonly yes" }
+  { "name": "Heimdall (导航页)", "id": "heimdall", "image": "lscr.io/linuxserver/heimdall:latest", "ports": ["4001:80"], "volumes": ["/opt/apps/heimdall:/config"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Nextcloud (Compose)", "id": "nextcloud-stack", "image": "compose", "ports": [], "volumes": [], "env": [], "extra": "", "compose":
+"services:\n  db:\n    image: mariadb:latest\n    restart: always\n    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW\n    environment:\n      - MYSQL_ROOT_PASSWORD=changeme\n      - MYSQL_PASSWORD=changeme\n      - MYSQL_DATABASE=nextcloud\n      - MYSQL_USER=nextcloud\n    volumes:\n      - /opt/apps/nextcloud/db:/var/lib/mysql\n  app:\n    image: nextcloud:latest\n    restart: always\n    ports:\n      - \"8088:80\"\n    environment:\n      - MYSQL_PASSWORD=changeme\n      - MYSQL_DATABASE=nextcloud\n      - MYSQL_USER=nextcloud\n      - MYSQL_HOST=db\n    volumes:\n      - /opt/apps/nextcloud/html:/var/www/html\n"
+  },
+
+  { "name": "Immich (Compose)", "id": "immich-stack", "image": "compose", "ports": [], "volumes": [], "env": [], "extra": "", "compose":
+"services:\n  redis:\n    image: redis:latest\n    restart: always\n  db:\n    image: postgres:16\n    restart: always\n    environment:\n      POSTGRES_PASSWORD: changeme\n      POSTGRES_USER: immich\n      POSTGRES_DB: immich\n    volumes:\n      - /opt/apps/immich/db:/var/lib/postgresql/data\n  immich-server:\n    image: ghcr.io/immich-app/immich-server:release\n    restart: always\n    depends_on:\n      - redis\n      - db\n    ports:\n      - \"2283:2283\"\n    environment:\n      - DB_HOSTNAME=db\n      - DB_USERNAME=immich\n      - DB_PASSWORD=changeme\n      - DB_DATABASE_NAME=immich\n      - REDIS_HOSTNAME=redis\n    volumes:\n      - /opt/apps/immich/upload:/usr/src/app/upload\n"
+  },
+
+  { "name": "Calibre Web", "id": "calibre-web", "image": "lscr.io/linuxserver/calibre-web:latest", "ports": ["8089:8083"], "volumes": ["/opt/apps/calibre-web:/config","/opt/books:/books"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Komga (漫画)", "id": "komga", "image": "gotson/komga:latest", "ports": ["25600:25600"], "volumes": ["/opt/apps/komga:/config","/opt/comics:/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Prowlarr", "id": "prowlarr", "image": "lscr.io/linuxserver/prowlarr:latest", "ports": ["9696:9696"], "volumes": ["/opt/apps/prowlarr:/config"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Sonarr", "id": "sonarr", "image": "lscr.io/linuxserver/sonarr:latest", "ports": ["8989:8989"], "volumes": ["/opt/apps/sonarr:/config","/opt/media:/media","/opt/downloads:/downloads"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Radarr", "id": "radarr", "image": "lscr.io/linuxserver/radarr:latest", "ports": ["7878:7878"], "volumes": ["/opt/apps/radarr:/config","/opt/media:/media","/opt/downloads:/downloads"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Bazarr (字幕)", "id": "bazarr", "image": "lscr.io/linuxserver/bazarr:latest", "ports": ["6767:6767"], "volumes": ["/opt/apps/bazarr:/config","/opt/media:/media"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Plausible (统计)", "id": "plausible", "image": "plausible/analytics:latest", "ports": ["8000:8000"], "volumes": [], "env": ["BASE_URL=http://localhost:8000"], "extra": "--restart=always" },
+
+  { "name": "NocoDB", "id": "nocodb", "image": "nocodb/nocodb:latest", "ports": ["8086:8080"], "volumes": ["/opt/apps/nocodb:/usr/app/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Pencilboard (简单笔记)", "id": "memos", "image": "neosmemo/memos:latest", "ports": ["5230:5230"], "volumes": ["/opt/apps/memos:/var/opt/memos"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Gokapi (文件分享)", "id": "gokapi", "image": "f0rc3/gokapi:latest", "ports": ["5380:5380"], "volumes": ["/opt/apps/gokapi:/app/config","/opt/apps/gokapi/data:/app/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Gotify (推送)", "id": "gotify", "image": "gotify/server:latest", "ports": ["8087:80"], "volumes": ["/opt/apps/gotify:/app/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "WireGuard Easy", "id": "wg-easy", "image": "weejewel/wg-easy:latest", "ports": ["51821:51821/tcp","51820:51820/udp"], "volumes": ["/opt/apps/wg-easy:/etc/wireguard"], "env": ["WG_HOST=your_domain_or_ip"], "extra": "--restart=always --cap-add=NET_ADMIN --cap-add=SYS_MODULE" },
+
+  { "name": "Speedtest Tracker", "id": "speedtest-tracker", "image": "ghcr.io/alexjustesen/speedtest-tracker:latest", "ports": ["8765:80"], "volumes": ["/opt/apps/speedtest:/config"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" }
 ]
