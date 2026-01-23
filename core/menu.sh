@@ -5,51 +5,38 @@ INSTALL_DIR="/opt/server-toolbox"
 source "${INSTALL_DIR}/core/common.sh"
 need_root
 
-# 🔥 热更新：每次进入菜单自动检查
+# 🔥 热更新
 auto_hot_update
 
-docker_menu() {
-  fetch_if_missing "modules/docker/docker.sh"
-  bash "${INSTALL_DIR}/modules/docker/docker.sh"
-}
-system_menu() {
-  fetch_if_missing "modules/system/system.sh"
-  bash "${INSTALL_DIR}/modules/system/system.sh"
-}
-plugins_menu() {
-  fetch_if_missing "modules/plugins/plugins.sh"
-  bash "${INSTALL_DIR}/modules/plugins/plugins.sh"
-}
-download_menu() {
-  fetch_if_missing "modules/download/download.sh"
-  bash "${INSTALL_DIR}/modules/download/download.sh"
-}
-ssh_menu() {
-  fetch_if_missing "modules/ssh/ssh.sh"
-  bash "${INSTALL_DIR}/modules/ssh/ssh.sh"
+run_mod() {
+  local rel="$1"
+  fetch_if_missing "$rel"
+  bash "${INSTALL_DIR}/${rel}"
 }
 
 while true; do
   clear
-  echo "========================================="
-  echo "   Server Toolbox  (Docker + System + SSH)"
-  echo "========================================="
-  echo "1) Docker 容器管理（20个常用容器）"
-  echo "2) 系统工具（BBR/Swap/UFW/日志）"
+  echo "=============================================="
+  echo "   Server Toolbox PRO  (Docker + System + SSH)"
+  echo "=============================================="
+  echo "1) Docker 容器中心（50个容器 + Compose + 日志/进入/更新）"
+  echo "2) 系统工具（BBR/Swap/日志）"
   echo "3) 常用插件（配置化安装）"
   echo "4) 下载工具（aria2/rclone/yt-dlp等）"
-  echo "5) SSH 工具（改密/改端口/允许root/重启）"
+  echo "5) SSH 工具（改密/改端口/root登录/安全模式）"
+  echo "6) 防火墙（开关/放行/关闭/查看）"
   echo "9) 手动更新（从 GitHub 拉最新）"
   echo "0) 退出"
   echo
-  read -r -p "请输入选项 [0-5/9]: " c
+  read -r -p "请输入选项 [0-6/9]: " c
 
   case "$c" in
-    1) docker_menu ;;
-    2) system_menu ;;
-    3) plugins_menu ;;
-    4) download_menu ;;
-    5) ssh_menu ;;
+    1) run_mod "modules/docker/docker.sh" ;;
+    2) run_mod "modules/system/system.sh" ;;
+    3) run_mod "modules/plugins/plugins.sh" ;;
+    4) run_mod "modules/download/download.sh" ;;
+    5) run_mod "modules/ssh/ssh.sh" ;;
+    6) run_mod "modules/firewall/firewall.sh" ;;
     9) force_update_all; read -r -p "回车继续..." _ ;;
     0) echo "Bye 👋"; exit 0 ;;
     *) warn "无效选项"; sleep 1 ;;
