@@ -6,6 +6,23 @@ need_root
 CFG="/opt/server-toolbox/config/containers.json"
 [[ -f "$CFG" ]] || { err "缺少配置：$CFG"; exit 1; }
 
+ensure_jq() {
+  if command -v jq >/dev/null 2>&1; then return 0; fi
+  warn "未检测到 jq，正在自动安装..."
+  if command -v apt >/dev/null 2>&1; then
+    apt update -y || true
+    apt install -y jq || true
+  elif command -v dnf >/dev/null 2>&1; then
+    dnf install -y jq || true
+  elif command -v yum >/dev/null 2>&1; then
+    yum install -y jq || true
+  elif command -v apk >/dev/null 2>&1; then
+    apk add --no-cache jq || true
+  fi
+  command -v jq >/dev/null 2>&1 || { err "jq 安装失败，无法继续"; exit 1; }
+  ok "jq 已就绪 ✅"
+}
+
 install_docker() {
   if command -v docker >/dev/null 2>&1; then return; fi
   info "安装 Docker（官方脚本）..."
@@ -49,22 +66,28 @@ write_env_file() {
   mkdir -p "/opt/apps/${id}" >/dev/null 2>&1 || true
   : >"$envfile"
 
+  # 常规 env
   jq -r ".[$idx].env[]? // empty" "$CFG" >>"$envfile" || true
 
+  # ✅ 修复点：secrets 的 length 计算，不能把 2>/dev/null 写进 jq 里
+  # 同时兼容 secrets 不存在/为 null
   local scount
-  scount="$(jq -r ".[$idx].secrets | length 2>/dev/null" "$CFG")"
-  if [[ "$scount" != "null" && "$scount" -gt 0 ]]; then
+  scount="$(jq -r ".[$idx].secrets // [] | length" "$CFG" 2>/dev/null || echo 0)"
+
+  if [[ "${scount:-0}" -gt 0 ]]; then
     for i in $(seq 0 $((scount-1))); do
       local key prompt def val
       key="$(jq -r ".[$idx].secrets[$i].key" "$CFG")"
       prompt="$(jq -r ".[$idx].secrets[$i].prompt" "$CFG")"
       def="$(jq -r ".[$idx].secrets[$i].default // \"\"" "$CFG")"
+
       echo
       read -r -p "${prompt} [默认: ${def}]: " val
       val="${val:-$def}"
       echo "${key}=${val}" >>"$envfile"
     done
   fi
+
   ok "已生成环境文件：$envfile"
 }
 
@@ -324,6 +347,8 @@ show_web_access_by_idx() {
   echo "================================="
   echo
 }
+
+ensure_jq
 
 while true; do
   clear
