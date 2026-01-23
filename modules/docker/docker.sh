@@ -1,3 +1,4 @@
+cat >/opt/server-toolbox/modules/docker/docker.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 source /opt/server-toolbox/core/common.sh
@@ -14,7 +15,6 @@ install_docker() {
   ok "Docker 安装完成 ✅"
 }
 
-# 检测端口是否被占用（TCP/UDP都看）
 port_in_use() {
   local p="$1"
   if command -v ss >/dev/null 2>&1; then
@@ -23,7 +23,6 @@ port_in_use() {
   return 1
 }
 
-# 从 ports 配置里提取主机端口，检查冲突
 check_port_conflicts() {
   local idx="$1"
   local conflicts=()
@@ -44,7 +43,6 @@ check_port_conflicts() {
   return 0
 }
 
-# 写入 env 到 /opt/apps/<id>/.env
 write_env_file() {
   local id="$1"
   local idx="$2"
@@ -134,10 +132,9 @@ deploy_run_by_idx() {
 
 deploy_compose_by_idx() {
   local idx="$1"
-  local id name
+  local id name compose
   id="$(jq -r ".[$idx].id" "$CFG")"
   name="$(jq -r ".[$idx].name" "$CFG")"
-  local compose
   compose="$(jq -r ".[$idx].compose // empty" "$CFG")"
   [[ -n "$compose" ]] || { warn "该容器未提供 compose 模板"; return; }
 
@@ -155,22 +152,19 @@ deploy_compose_by_idx() {
 
 logs_by_idx() {
   local idx="$1"
-  local id
-  id="$(jq -r ".[$idx].id" "$CFG")"
+  local id; id="$(jq -r ".[$idx].id" "$CFG")"
   docker logs --tail 200 -f "$id" || true
 }
 
 exec_by_idx() {
   local idx="$1"
-  local id
-  id="$(jq -r ".[$idx].id" "$CFG")"
+  local id; id="$(jq -r ".[$idx].id" "$CFG")"
   docker exec -it "$id" sh 2>/dev/null || docker exec -it "$id" bash 2>/dev/null || warn "进入失败（无 sh/bash）"
 }
 
 restart_by_idx() {
   local idx="$1"
-  local id
-  id="$(jq -r ".[$idx].id" "$CFG")"
+  local id; id="$(jq -r ".[$idx].id" "$CFG")"
   docker restart "$id" >/dev/null 2>&1 || true
   ok "已重启 ✅ $id"
 }
@@ -193,7 +187,6 @@ update_all_images() {
   ok "镜像更新完成 ✅（需要的容器可 r数字 重启）"
 }
 
-# ====== 显示容器列表 + 运行状态 ======
 show_list_with_status() {
   local total
   total="$(jq 'length' "$CFG" 2>/dev/null || echo 0)"
@@ -203,9 +196,7 @@ show_list_with_status() {
     id="$(jq -r ".[$i].id" "$CFG")"
     name="$(jq -r ".[$i].name" "$CFG")"
 
-    icon="⚪"
-    state="未运行"
-    ports="-"
+    icon="⚪"; state="未安装"; ports="-"
 
     if command -v docker >/dev/null 2>&1; then
       if docker inspect "$id" >/dev/null 2>&1; then
@@ -214,33 +205,24 @@ show_list_with_status() {
         health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$id" 2>/dev/null || true)"
 
         if [[ "$running" == "true" ]]; then
-          icon="🟢"
-          state="运行中"
+          icon="🟢"; state="运行中"
         else
-          icon="⚪"
-          state="已停止"
+          icon="⚪"; state="已停止"
         fi
 
         if [[ -n "${health:-}" && "$health" != "<no value>" ]]; then
           if [[ "$health" == "healthy" ]]; then
-            icon="🟢"
-            state="运行健康"
+            icon="🟢"; state="运行健康"
           elif [[ "$health" == "unhealthy" ]]; then
-            icon="🔴"
-            state="运行异常"
+            icon="🔴"; state="运行异常"
           else
-            icon="🟡"
-            state="健康检查:${health}"
+            icon="🟡"; state="健康检查:${health}"
           fi
         fi
 
-        ports="$(docker ps --filter "name=^/${id}$" --format '{{.Ports}}' 2>/dev/null | head -n1)"
+        ports="$(docker ps --filter "name=^/${id}$" --format '{{.Ports}}' 2>/dev/null | head -n1 || true)"
         [[ -z "$ports" ]] && ports="$(docker inspect -f '{{range $p,$conf := .NetworkSettings.Ports}}{{$p}} {{end}}' "$id" 2>/dev/null | xargs || true)"
         [[ -z "$ports" ]] && ports="-"
-      else
-        icon="⚪"
-        state="未安装"
-        ports="-"
       fi
     fi
 
@@ -248,7 +230,6 @@ show_list_with_status() {
   done
 }
 
-# ====== 一键访问地址（w数字） ======
 get_public_ip_best() {
   local ip=""
   ip="$(curl -fsSL --max-time 2 https://api.ipify.org 2>/dev/null || true)"
@@ -355,29 +336,57 @@ while true; do
   echo
 
   read -r -p "请输入: " c
-  [[ "$c" == "0" ]] && exit 0
 
   case "$c" in
-    s) install_docker; docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"; read -r -p "回车继续..." _ ;;
-    u) update_all_images; read -r -p "回车继续..." _ ;;
+    0) exit 0 ;;
+    s)
+      install_docker
+      docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+      read -r -p "回车继续..." _
+      ;;
+    u)
+      update_all_images
+      read -r -p "回车继续..." _
+      ;;
+    [0-9]*)
+      deploy_run_by_idx $((c-1))
+      read -r -p "回车继续..." _
+      ;;
+    c[0-9]*)
+      n="${c#c}"
+      deploy_compose_by_idx $((n-1))
+      read -r -p "回车继续..." _
+      ;;
+    l[0-9]*)
+      n="${c#l}"
+      logs_by_idx $((n-1))
+      ;;
+    e[0-9]*)
+      n="${c#e}"
+      exec_by_idx $((n-1))
+      ;;
+    r[0-9]*)
+      n="${c#r}"
+      restart_by_idx $((n-1))
+      read -r -p "回车继续..." _
+      ;;
+    d[0-9]*)
+      n="${c#d}"
+      delete_by_idx $((n-1))
+      read -r -p "回车继续..." _
+      ;;
+    w[0-9]*)
+      n="${c#w}"
+      show_web_access_by_idx $((n-1))
+      read -r -p "回车继续..." _
+      ;;
     *)
-      if [[ "$c" =~ ^[0-9]+$ ]]; then
-        deploy_run_by_idx $((c-1)); read -r -p "回车继续..." _ ;;
-      elif [[ "$c" =~ ^c[0-9]+$ ]]; then
-        n="${c#c}"; deploy_compose_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
-      elif [[ "$c" =~ ^l[0-9]+$ ]]; then
-        n="${c#l}"; logs_by_idx $((n-1)) ;;
-      elif [[ "$c" =~ ^e[0-9]+$ ]]; then
-        n="${c#e}"; exec_by_idx $((n-1)) ;;
-      elif [[ "$c" =~ ^r[0-9]+$ ]]; then
-        n="${c#r}"; restart_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
-      elif [[ "$c" =~ ^d[0-9]+$ ]]; then
-        n="${c#d}"; delete_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
-      elif [[ "$c" =~ ^w[0-9]+$ ]]; then
-        n="${c#w}"; show_web_access_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
-      else
-        warn "无效输入"; sleep 1 ;;
-      fi
+      warn "无效输入"
+      sleep 1
       ;;
   esac
 done
+EOF
+
+chmod +x /opt/server-toolbox/modules/docker/docker.sh
+bash -n /opt/server-toolbox/modules/docker/docker.sh && echo "[OK] docker.sh 语法正常 ✅"
