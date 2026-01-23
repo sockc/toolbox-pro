@@ -9,11 +9,16 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-echo "[1/4] 安装依赖..."
+# 强制把临时目录挪到更稳定位置，避免 /tmp 爆掉时 apt 无法工作
+mkdir -p /var/tmp/toolbox-tmp >/dev/null 2>&1 || true
+export TMPDIR="/var/tmp/toolbox-tmp"
+
+echo "[1/4] 安装依赖（带自动修复）..."
 bash <(curl -fsSL "${REPO_RAW}/scripts/deps.sh")
 
 echo "[2/4] 拉取核心文件..."
 mkdir -p "${INSTALL_DIR}/core" "${INSTALL_DIR}/modules" "${INSTALL_DIR}/config"
+
 curl -fsSL "${REPO_RAW}/core/menu.sh" -o "${INSTALL_DIR}/core/menu.sh"
 curl -fsSL "${REPO_RAW}/core/common.sh" -o "${INSTALL_DIR}/core/common.sh"
 curl -fsSL "${REPO_RAW}/core/version.txt" -o "${INSTALL_DIR}/core/version.txt"
