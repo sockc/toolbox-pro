@@ -1,1 +1,27 @@
-
+[
+  {
+    "name": "ctop (容器监控 TUI)",
+    "check": "command -v ctop",
+    "install": "curl -fsSL https://github.com/bcicen/ctop/releases/latest/download/ctop-0.7.7-linux-amd64 -o /usr/local/bin/ctop && chmod +x /usr/local/bin/ctop"
+  },
+  {
+    "name": "lazydocker (Docker TUI)",
+    "check": "command -v lazydocker",
+    "install": "curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash"
+  },
+  {
+    "name": "neofetch",
+    "check": "command -v neofetch",
+    "install": "apt update -y && apt install -y neofetch || true"
+  },
+  {
+    "name": "btop (系统监控)",
+    "check": "command -v btop",
+    "install": "apt update -y && apt install -y btop || true"
+  },
+  {
+    "name": "tmux",
+    "check": "command -v tmux",
+    "install": "apt update -y && apt install -y tmux || true"
+  }
+]
