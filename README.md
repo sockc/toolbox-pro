@@ -1,5 +1,8 @@
 # Server Toolbox
 
+快捷进入菜单
+toolbox
+
 一键安装：
 
 ```bash
