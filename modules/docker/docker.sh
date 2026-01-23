@@ -205,7 +205,63 @@ while true; do
   echo "  s      = 查看运行状态"
   echo "  0      = 返回"
   echo
-  jq -r 'to_entries[] | "\(.key+1)) \(.value.name) [\(.value.id)]"' "$CFG"
+# ====== 显示容器列表 + 运行状态 ======
+show_list_with_status() {
+  local total
+  total="$(jq 'length' "$CFG" 2>/dev/null || echo 0)"
+
+  for i in $(seq 0 $((total-1))); do
+    local id name state icon ports
+    id="$(jq -r ".[$i].id" "$CFG")"
+    name="$(jq -r ".[$i].name" "$CFG")"
+
+    icon="⚪"
+    state="未运行"
+    ports="-"
+
+    if command -v docker >/dev/null 2>&1; then
+      # 读取运行状态
+      if docker inspect "$id" >/dev/null 2>&1; then
+        local running health
+        running="$(docker inspect -f '{{.State.Running}}' "$id" 2>/dev/null || echo false)"
+        health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$id" 2>/dev/null || true)"
+
+        if [[ "$running" == "true" ]]; then
+          icon="🟢"
+          state="运行中"
+        else
+          icon="⚪"
+          state="已停止"
+        fi
+
+        if [[ -n "${health:-}" && "$health" != "<no value>" ]]; then
+          if [[ "$health" == "healthy" ]]; then
+            icon="🟢"
+            state="运行健康"
+          elif [[ "$health" == "unhealthy" ]]; then
+            icon="🔴"
+            state="运行异常"
+          else
+            icon="🟡"
+            state="健康检查:${health}"
+          fi
+        fi
+
+        # 端口显示（能显示就显示）
+        ports="$(docker ps --filter "name=^/${id}$" --format '{{.Ports}}' 2>/dev/null | head -n1)"
+        [[ -z "$ports" ]] && ports="$(docker inspect -f '{{range $p,$conf := .NetworkSettings.Ports}}{{$p}} {{end}}' "$id" 2>/dev/null | xargs || true)"
+        [[ -z "$ports" ]] && ports="-"
+      else
+        icon="⚪"
+        state="未安装"
+        ports="-"
+      fi
+    fi
+
+    printf "%2d) %s %s [%s]  (%s)  %s\n" "$((i+1))" "$icon" "$name" "$id" "$state" "$ports"
+  done
+}
+
   echo
   read -r -p "请输入: " c
 
