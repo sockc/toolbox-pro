@@ -3,33 +3,37 @@ set -euo pipefail
 source /opt/server-toolbox/core/common.sh
 need_root
 
-install_ctop() {
-  if command -v ctop >/dev/null 2>&1; then ok "ctop 已安装"; return; fi
-  info "安装 ctop..."
-  curl -fsSL https://github.com/bcicen/ctop/releases/latest/download/ctop-0.7.7-linux-amd64 -o /usr/local/bin/ctop || true
-  chmod +x /usr/local/bin/ctop || true
-  ok "ctop 安装完成 ✅ 输入 ctop 运行"
-}
-
-install_lazydocker() {
-  if command -v lazydocker >/dev/null 2>&1; then ok "lazydocker 已安装"; return; fi
-  info "安装 lazydocker..."
-  curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-  ok "lazydocker 安装完成 ✅ 输入 lazydocker 运行"
-}
+CFG="/opt/server-toolbox/config/plugins.json"
+[[ -f "$CFG" ]] || { err "缺少配置：$CFG"; exit 1; }
 
 while true; do
   clear
-  echo "=========== 常用插件 ==========="
-  echo "1) 安装 ctop（容器监控）"
-  echo "2) 安装 lazydocker（Docker TUI）"
+  echo "=========== 常用插件（配置化） ==========="
+  jq -r 'to_entries[] | "\(.key+1)) \(.value.name)"' "$CFG"
   echo "0) 返回"
   echo
   read -r -p "请选择: " c
-  case "$c" in
-    1) install_ctop; read -r -p "回车继续..." _ ;;
-    2) install_lazydocker; read -r -p "回车继续..." _ ;;
-    0) exit 0 ;;
-    *) warn "无效选项"; sleep 1 ;;
-  esac
+  [[ "$c" == "0" ]] && exit 0
+
+  idx=$((c-1))
+  name="$(jq -r ".[$idx].name // empty" "$CFG")"
+  check="$(jq -r ".[$idx].check // empty" "$CFG")"
+  install="$(jq -r ".[$idx].install // empty" "$CFG")"
+
+  [[ -n "$name" ]] || { warn "无效选项"; sleep 1; continue; }
+
+  info "插件：$name"
+  if bash -lc "$check" >/dev/null 2>&1; then
+    ok "已安装 ✅"
+  else
+    info "开始安装..."
+    bash -lc "$install" || true
+    if bash -lc "$check" >/dev/null 2>&1; then
+      ok "安装成功 ✅"
+    else
+      warn "安装可能失败（请检查网络/系统）"
+    fi
+  fi
+
+  read -r -p "回车继续..." _
 done
