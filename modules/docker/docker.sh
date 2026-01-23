@@ -31,6 +31,31 @@ install_docker() {
   ok "Docker 安装完成 ✅"
 }
 
+# ✅ 新增：保证 docker compose 可用（V2）
+ensure_docker_compose() {
+  install_docker
+  if docker compose version >/dev/null 2>&1; then
+    return 0
+  fi
+
+  warn "未检测到 docker compose（V2），正在自动安装..."
+  # Debian/Ubuntu 通常可用 docker-compose-plugin
+  if command -v apt >/dev/null 2>&1; then
+    apt update -y || true
+    apt install -y docker-compose-plugin || true
+  fi
+
+  # 再检测一次
+  if docker compose version >/dev/null 2>&1; then
+    ok "docker compose 已就绪 ✅"
+    return 0
+  fi
+
+  # 兜底提示（不强行装 curl+github 的二进制，避免出事）
+  warn "docker compose 仍不可用：请手动安装 docker-compose-plugin 或升级 docker"
+  return 1
+}
+
 port_in_use() {
   local p="$1"
   if command -v ss >/dev/null 2>&1; then
@@ -42,6 +67,12 @@ port_in_use() {
 check_port_conflicts() {
   local idx="$1"
   local conflicts=()
+
+  # 没有 ports 就跳过
+  local has_ports
+  has_ports="$(jq -r "(.[$idx].ports // []) | length" "$CFG" 2>/dev/null || echo 0)"
+  [[ "${has_ports:-0}" -le 0 ]] && return 0
+
   while read -r pm; do
     local host="${pm%%:*}"
     host="${host%%/*}"
@@ -53,7 +84,7 @@ check_port_conflicts() {
 
   if [[ "${#conflicts[@]}" -gt 0 ]]; then
     warn "端口冲突：${conflicts[*]}"
-    read -r -p "仍然继续部署？(y/N): " yn
+    read -r -p "仍然继续部署？(y/N): " yn || true
     [[ "${yn,,}" == "y" ]] || return 1
   fi
   return 0
@@ -69,8 +100,7 @@ write_env_file() {
   # 常规 env
   jq -r ".[$idx].env[]? // empty" "$CFG" >>"$envfile" || true
 
-  # ✅ 修复点：secrets 的 length 计算，不能把 2>/dev/null 写进 jq 里
-  # 同时兼容 secrets 不存在/为 null
+  # ✅ 修复：secrets 计数写法（兼容不存在/为null）
   local scount
   scount="$(jq -r ".[$idx].secrets // [] | length" "$CFG" 2>/dev/null || echo 0)"
 
@@ -82,7 +112,7 @@ write_env_file() {
       def="$(jq -r ".[$idx].secrets[$i].default // \"\"" "$CFG")"
 
       echo
-      read -r -p "${prompt} [默认: ${def}]: " val
+      read -r -p "${prompt} [默认: ${def}]: " val || true
       val="${val:-$def}"
       echo "${key}=${val}" >>"$envfile"
     done
@@ -123,6 +153,7 @@ deploy_run_by_idx() {
   image="$(jq -r ".[$idx].image" "$CFG")"
   extra="$(jq -r ".[$idx].extra // \"\"" "$CFG")"
   [[ -n "$id" && "$id" != "null" ]] || { warn "无效容器"; return; }
+  [[ -n "$image" && "$image" != "null" ]] || { warn "该条目缺少 image"; return; }
 
   install_docker
   mkdir -p "/opt/apps/${id}" >/dev/null 2>&1 || true
@@ -158,8 +189,11 @@ deploy_compose_by_idx() {
   compose="$(jq -r ".[$idx].compose // empty" "$CFG")"
   [[ -n "$compose" ]] || { warn "该容器未提供 compose 模板"; return; }
 
-  install_docker
+  ensure_docker_compose || return
   mkdir -p "/opt/apps/${id}" >/dev/null 2>&1 || true
+
+  # ✅ Compose 也做端口冲突检测（如果 containers.json 里有 ports）
+  check_port_conflicts "$idx" || return
 
   write_env_file "$id" "$idx"
   printf "%s\n" "$compose" >"/opt/apps/${id}/docker-compose.yml"
@@ -207,6 +241,26 @@ update_all_images() {
   ok "镜像更新完成 ✅（需要的容器可 r数字 重启）"
 }
 
+# ✅ 新增：排序权重（运行中 > 已安装 > 未安装）
+rank_container() {
+  local id="$1"
+  if ! command -v docker >/dev/null 2>&1; then
+    echo 3
+    return
+  fi
+  if docker inspect "$id" >/dev/null 2>&1; then
+    local running
+    running="$(docker inspect -f '{{.State.Running}}' "$id" 2>/dev/null || echo false)"
+    if [[ "$running" == "true" ]]; then
+      echo 1
+    else
+      echo 2
+    fi
+  else
+    echo 3
+  fi
+}
+
 show_list_with_status() {
   local total cols colw
   total="$(jq 'length' "$CFG" 2>/dev/null || echo 0)"
@@ -214,8 +268,23 @@ show_list_with_status() {
   colw=$((cols/2))
   [[ $colw -lt 55 ]] && colw=55
 
-  local lines=()
+  # 生成排序索引：rank, index
+  local idx_list=()
   for i in $(seq 0 $((total-1))); do
+    local id r
+    id="$(jq -r ".[$i].id" "$CFG")"
+    r="$(rank_container "$id")"
+    idx_list+=("$(printf "%d %04d" "$r" "$i")")
+  done
+
+  # 排序后输出
+  mapfile -t idx_list < <(printf "%s\n" "${idx_list[@]}" | sort -n)
+
+  local lines=()
+  for item in "${idx_list[@]}"; do
+    local i="${item##* }"
+    i=$((10#$i))
+
     local id name state icon ports
     id="$(jq -r ".[$i].id" "$CFG")"
     name="$(jq -r ".[$i].name" "$CFG")"
@@ -249,6 +318,8 @@ show_list_with_status() {
       fi
     fi
 
+    # 注意：这里显示的是“排序后的序号”，你的输入依旧用原始编号更直觉
+    # 所以我们仍打印原始编号 i+1
     lines+=("$(printf "%2d) %s %s (%s) %s" "$((i+1))" "$icon" "$name" "$state" "$ports")")
   done
 
@@ -368,26 +439,26 @@ while true; do
 
   show_list_with_status
   echo
-  read -r -p "请输入: " c
+  read -r -p "请输入: " c || true
 
   case "$c" in
     0) exit 0 ;;
-    s) install_docker; docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"; read -r -p "回车继续..." _ ;;
-    u) update_all_images; read -r -p "回车继续..." _ ;;
+    s) install_docker; docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"; read -r -p "回车继续..." _ || true ;;
+    u) update_all_images; read -r -p "回车继续..." _ || true ;;
     [0-9]*)
-      deploy_run_by_idx $((c-1)); read -r -p "回车继续..." _ ;;
+      deploy_run_by_idx $((c-1)); read -r -p "回车继续..." _ || true ;;
     c[0-9]*)
-      n="${c#c}"; deploy_compose_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
+      n="${c#c}"; deploy_compose_by_idx $((n-1)); read -r -p "回车继续..." _ || true ;;
     l[0-9]*)
       n="${c#l}"; logs_by_idx $((n-1)) ;;
     e[0-9]*)
       n="${c#e}"; exec_by_idx $((n-1)) ;;
     r[0-9]*)
-      n="${c#r}"; restart_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
+      n="${c#r}"; restart_by_idx $((n-1)); read -r -p "回车继续..." _ || true ;;
     d[0-9]*)
-      n="${c#d}"; delete_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
+      n="${c#d}"; delete_by_idx $((n-1)); read -r -p "回车继续..." _ || true ;;
     w[0-9]*)
-      n="${c#w}"; show_web_access_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
+      n="${c#w}"; show_web_access_by_idx $((n-1)); read -r -p "回车继续..." _ || true ;;
     *)
       warn "无效输入"; sleep 1 ;;
   esac
