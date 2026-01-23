@@ -1,1 +1,39 @@
+[
+  { "name": "Portainer", "id": "portainer", "image": "portainer/portainer-ce:latest", "ports": ["9443:9443","9000:9000"], "volumes": ["portainer_data:/data","/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always" },
 
+  { "name": "Watchtower (自动更新容器)", "id": "watchtower", "image": "containrrr/watchtower:latest", "ports": [], "volumes": ["/var/run/docker.sock:/var/run/docker.sock"], "env": [], "extra": "--restart=always --cleanup --schedule \"0 0 4 * * *\"" },
+
+  { "name": "Nginx Proxy Manager", "id": "npm", "image": "jc21/nginx-proxy-manager:latest", "ports": ["80:80","81:81","443:443"], "volumes": ["/opt/apps/npm/data:/data","/opt/apps/npm/letsencrypt:/etc/letsencrypt"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Caddy", "id": "caddy", "image": "caddy:latest", "ports": ["80:80","443:443"], "volumes": ["/opt/apps/caddy/Caddyfile:/etc/caddy/Caddyfile","/opt/apps/caddy/data:/data","/opt/apps/caddy/config:/config"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Uptime Kuma", "id": "uptime-kuma", "image": "louislam/uptime-kuma:latest", "ports": ["3001:3001"], "volumes": ["/opt/apps/uptime-kuma:/app/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Vaultwarden", "id": "vaultwarden", "image": "vaultwarden/server:latest", "ports": ["8080:80"], "volumes": ["/opt/apps/vaultwarden:/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "AdGuardHome", "id": "adguardhome", "image": "adguard/adguardhome:latest", "ports": ["3000:3000","53:53/tcp","53:53/udp","80:80","443:443"], "volumes": ["/opt/apps/adguard/work:/opt/adguardhome/work","/opt/apps/adguard/conf:/opt/adguardhome/conf"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Home Assistant", "id": "homeassistant", "image": "ghcr.io/home-assistant/home-assistant:stable", "ports": ["8123:8123"], "volumes": ["/opt/apps/homeassistant:/config"], "env": [], "extra": "--restart=always --network=host" },
+
+  { "name": "OpenList", "id": "openlist", "image": "openlistteam/openlist:latest", "ports": ["5244:5244"], "volumes": ["/opt/apps/openlist:/data"], "env": [], "extra": "--restart=always" },
+
+  { "name": "FileBrowser", "id": "filebrowser", "image": "filebrowser/filebrowser:latest", "ports": ["8081:80"], "volumes": ["/opt/apps/filebrowser:/srv","/opt/apps/filebrowser/db:/database"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Syncthing", "id": "syncthing", "image": "syncthing/syncthing:latest", "ports": ["8384:8384","22000:22000/tcp","22000:22000/udp","21027:21027/udp"], "volumes": ["/opt/apps/syncthing:/var/syncthing"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Jellyfin", "id": "jellyfin", "image": "jellyfin/jellyfin:latest", "ports": ["8096:8096"], "volumes": ["/opt/apps/jellyfin/config:/config","/opt/apps/jellyfin/cache:/cache","/opt/media:/media"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Immich (照片备份)", "id": "immich", "image": "ghcr.io/immich-app/immich-server:release", "ports": ["2283:2283"], "volumes": ["/opt/apps/immich/upload:/usr/src/app/upload"], "env": ["TZ=Asia/Shanghai"], "extra": "--restart=always" },
+
+  { "name": "Grafana", "id": "grafana", "image": "grafana/grafana:latest", "ports": ["3000:3000"], "volumes": ["/opt/apps/grafana:/var/lib/grafana"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Prometheus", "id": "prometheus", "image": "prom/prometheus:latest", "ports": ["9090:9090"], "volumes": ["/opt/apps/prometheus:/etc/prometheus"], "env": [], "extra": "--restart=always" },
+
+  { "name": "Node Exporter", "id": "node-exporter", "image": "prom/node-exporter:latest", "ports": ["9100:9100"], "volumes": [], "env": [], "extra": "--restart=always" },
+
+  { "name": "PostgreSQL", "id": "postgres", "image": "postgres:16", "ports": ["5432:5432"], "volumes": ["/opt/apps/postgres:/var/lib/postgresql/data"], "env": ["POSTGRES_PASSWORD=changeme"], "extra": "--restart=always" },
+
+  { "name": "MariaDB", "id": "mariadb", "image": "mariadb:latest", "ports": ["3306:3306"], "volumes": ["/opt/apps/mariadb:/var/lib/mysql"], "env": ["MARIADB_ROOT_PASSWORD=changeme"], "extra": "--restart=always" },
+
+  { "name": "Redis", "id": "redis", "image": "redis:latest", "ports": ["6379:6379"], "volumes": ["/opt/apps/redis:/data"], "env": [], "extra": "--restart=always --appendonly yes" }
+]
