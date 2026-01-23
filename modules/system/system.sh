@@ -10,7 +10,7 @@ net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
 EOF
   sysctl --system >/dev/null 2>&1 || true
-  ok "已尝试开启 BBR ✅（重启后更稳）"
+  ok "已尝试开启 BBR ✅（建议重启后确认）"
 }
 
 add_swap() {
@@ -27,7 +27,7 @@ add_swap() {
 
 ufw_enable() {
   if ! command -v ufw >/dev/null 2>&1; then
-    apt update -y && apt install -y ufw
+    apt update -y && apt install -y ufw || true
   fi
   ufw allow OpenSSH >/dev/null 2>&1 || true
   ufw --force enable
@@ -36,16 +36,16 @@ ufw_enable() {
 
 fail2ban_install() {
   if ! command -v fail2ban-client >/dev/null 2>&1; then
-    apt update -y && apt install -y fail2ban
+    apt update -y && apt install -y fail2ban || true
   fi
-  systemctl enable --now fail2ban
+  systemctl enable --now fail2ban || true
   ok "Fail2ban 已启用 ✅"
 }
 
 log_cleanup() {
-  info "清理 journald 日志..."
+  info "清理 journald 日志（保留 7 天）..."
   journalctl --vacuum-time=7d >/dev/null 2>&1 || true
-  ok "已保留最近 7 天日志 ✅"
+  ok "日志清理完成 ✅"
 }
 
 while true; do
