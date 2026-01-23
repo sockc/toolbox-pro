@@ -1,7 +1,7 @@
 [
   {
     "id": "portainer",
-    "name": "容器管理面板（Portainer）",
+    "name": "容器管理面板",
     "image": "portainer/portainer-ce:latest",
     "ports": ["9000:9000", "9443:9443"],
     "volumes": [
@@ -14,17 +14,17 @@
   },
   {
     "id": "watchtower",
-    "name": "自动更新容器（Watchtower）",
+    "name": "自动更新容器",
     "image": "containrrr/watchtower:latest",
     "ports": [],
     "volumes": ["/var/run/docker.sock:/var/run/docker.sock"],
     "extra": "--restart=always --cleanup --schedule \"0 0 4 * * *\"",
-    "notes": "每天凌晨4点自动更新容器（需谨慎，建议先用于低风险容器）",
+    "notes": "每天凌晨4点自动更新容器（谨慎启用，建议先用于低风险容器）",
     "show_after_install": true
   },
   {
     "id": "npm",
-    "name": "反代面板（Nginx Proxy Manager）",
+    "name": "反代面板",
     "image": "jc21/nginx-proxy-manager:latest",
     "ports": ["80:80", "81:81", "443:443"],
     "volumes": [
@@ -36,21 +36,8 @@
     "show_after_install": true
   },
   {
-    "id": "lucky",
-    "name": "反向代理一体化（Lucky）",
-    "image": "gdy666/lucky:v2",
-    "ports": ["16601:16601"],
-    "volumes": [
-      "/opt/apps/lucky/conf:/app/conf",
-      "/var/run/docker.sock:/var/run/docker.sock"
-    ],
-    "extra": "--restart=always --net=host",
-    "notes": "访问：http://IP:16601 默认账号/密码：666/666（建议立刻修改，并设置安全入口）",
-    "show_after_install": true
-  },
-  {
     "id": "caddy",
-    "name": "轻量反代（Caddy）",
+    "name": "轻量反代",
     "image": "caddy:latest",
     "ports": ["80:80", "443:443"],
     "volumes": [
@@ -59,12 +46,12 @@
       "/opt/apps/caddy/config:/config"
     ],
     "extra": "--restart=always",
-    "notes": "需要自己写 Caddyfile，适合喜欢极简反代的用户",
+    "notes": "需要自己写 Caddyfile，适合极简反代",
     "show_after_install": true
   },
   {
     "id": "uptime-kuma",
-    "name": "状态监控（Uptime Kuma）",
+    "name": "状态监控面板",
     "image": "louislam/uptime-kuma:latest",
     "ports": ["3001:3001"],
     "volumes": ["/opt/apps/uptime-kuma/data:/app/data"],
@@ -74,17 +61,17 @@
   },
   {
     "id": "vaultwarden",
-    "name": "密码库（Vaultwarden）",
+    "name": "密码库",
     "image": "vaultwarden/server:latest",
     "ports": ["8088:80"],
     "volumes": ["/opt/apps/vaultwarden/data:/data"],
     "extra": "--restart=always",
-    "notes": "访问：http://IP:8088（建议配合反代上 HTTPS）",
+    "notes": "访问：http://IP:8088（建议反代上 HTTPS）",
     "show_after_install": true
   },
   {
     "id": "adguardhome",
-    "name": "去广告 DNS（AdGuard Home）",
+    "name": "去广告DNS",
     "image": "adguard/adguardhome:latest",
     "ports": ["3000:3000", "53:53/udp", "53:53/tcp"],
     "volumes": [
@@ -92,12 +79,12 @@
       "/opt/apps/adguardhome/conf:/opt/adguardhome/conf"
     ],
     "extra": "--restart=always",
-    "notes": "首次初始化访问：http://IP:3000（同时占用53端口）",
+    "notes": "首次初始化访问：http://IP:3000（会占用53端口）",
     "show_after_install": true
   },
   {
     "id": "pihole",
-    "name": "去广告 DNS（Pi-hole）",
+    "name": "去广告DNS二号",
     "image": "pihole/pihole:latest",
     "ports": ["8081:80", "53:53/tcp", "53:53/udp"],
     "volumes": [
@@ -107,18 +94,14 @@
     "extra": "--restart=always",
     "env": ["TZ=Asia/Shanghai"],
     "secrets": [
-      {
-        "key": "WEBPASSWORD",
-        "prompt": "Pi-hole 管理密码 WEBPASSWORD",
-        "default": "pihole123456"
-      }
+      { "key": "WEBPASSWORD", "prompt": "管理密码", "default": "pihole123456" }
     ],
     "notes": "访问：http://IP:8081/admin（会占用53端口）",
     "show_after_install": true
   },
   {
     "id": "homeassistant",
-    "name": "智能家居（Home Assistant）",
+    "name": "智能家居中心",
     "image": "ghcr.io/home-assistant/home-assistant:stable",
     "ports": ["8123:8123"],
     "volumes": ["/opt/apps/homeassistant/config:/config"],
@@ -128,7 +111,7 @@
   },
   {
     "id": "openlist",
-    "name": "网盘目录（OpenList）",
+    "name": "网盘目录程序",
     "image": "openlistteam/openlist:latest",
     "ports": ["5244:5244"],
     "volumes": ["/opt/apps/openlist/data:/opt/openlist/data"],
@@ -138,7 +121,7 @@
   },
   {
     "id": "filebrowser",
-    "name": "文件管理（FileBrowser）",
+    "name": "网页文件管理",
     "image": "filebrowser/filebrowser:latest",
     "ports": ["8082:80"],
     "volumes": [
@@ -152,7 +135,7 @@
   },
   {
     "id": "syncthing",
-    "name": "文件同步（Syncthing）",
+    "name": "文件同步",
     "image": "syncthing/syncthing:latest",
     "ports": ["8384:8384", "22000:22000", "21027:21027/udp"],
     "volumes": ["/opt/apps/syncthing:/var/syncthing"],
@@ -162,7 +145,7 @@
   },
   {
     "id": "jellyfin",
-    "name": "影音库（Jellyfin）",
+    "name": "影音库播放",
     "image": "jellyfin/jellyfin:latest",
     "ports": ["8096:8096"],
     "volumes": [
@@ -176,7 +159,7 @@
   },
   {
     "id": "plex",
-    "name": "影音库（Plex）",
+    "name": "影音库播放二号",
     "image": "plexinc/pms-docker:latest",
     "ports": ["32400:32400"],
     "volumes": [
@@ -184,12 +167,12 @@
       "/opt/media:/media"
     ],
     "extra": "--restart=always --network=host",
-    "notes": "Plex 常用 host 网络，Web 通常：http://IP:32400/web",
+    "notes": "Web 通常：http://IP:32400/web（常用host模式）",
     "show_after_install": true
   },
   {
     "id": "emby",
-    "name": "影音库（Emby）",
+    "name": "影音库播放三号",
     "image": "emby/embyserver:latest",
     "ports": ["8097:8096"],
     "volumes": [
@@ -202,7 +185,7 @@
   },
   {
     "id": "navidrome",
-    "name": "音乐库（Navidrome）",
+    "name": "音乐库播放",
     "image": "deluan/navidrome:latest",
     "ports": ["4533:4533"],
     "volumes": [
@@ -216,7 +199,7 @@
   },
   {
     "id": "qbittorrent",
-    "name": "下载器（qBittorrent）",
+    "name": "下载器一号",
     "image": "lscr.io/linuxserver/qbittorrent:latest",
     "ports": ["8080:8080", "6881:6881", "6881:6881/udp"],
     "volumes": [
@@ -225,12 +208,12 @@
     ],
     "extra": "--restart=always",
     "env": ["PUID=1000", "PGID=1000", "TZ=Asia/Shanghai", "WEBUI_PORT=8080"],
-    "notes": "访问：http://IP:8080（首次默认账号通常：admin / adminadmin 或查看日志）",
+    "notes": "访问：http://IP:8080（默认账号可能：admin/adminadmin 或查看日志）",
     "show_after_install": true
   },
   {
     "id": "transmission",
-    "name": "下载器（Transmission）",
+    "name": "下载器二号",
     "image": "lscr.io/linuxserver/transmission:latest",
     "ports": ["9091:9091", "51413:51413", "51413:51413/udp"],
     "volumes": [
@@ -244,78 +227,74 @@
   },
   {
     "id": "aria2-pro",
-    "name": "下载器（Aria2 Pro）",
+    "name": "下载器三号",
     "image": "p3terx/aria2-pro:latest",
     "ports": ["6800:6800"],
     "volumes": ["/opt/apps/aria2-pro/config:/config", "/opt/downloads:/downloads"],
     "extra": "--restart=always",
     "secrets": [
-      {
-        "key": "RPC_SECRET",
-        "prompt": "Aria2 RPC 密钥（RPC_SECRET）",
-        "default": "aria2rpc123456"
-      }
+      { "key": "RPC_SECRET", "prompt": "下载密钥", "default": "aria2rpc123456" }
     ],
-    "notes": "RPC 端口：6800（配合 AriaNg 使用）",
+    "notes": "RPC端口：6800（配合网页面板使用）",
     "show_after_install": true
   },
   {
     "id": "ariang",
-    "name": "下载面板（AriaNg）",
+    "name": "下载器网页面板",
     "image": "p3terx/ariang:latest",
     "ports": ["6880:6880"],
     "volumes": [],
     "extra": "--restart=always",
-    "notes": "访问：http://IP:6880（需要手动配置 Aria2 RPC）",
+    "notes": "访问：http://IP:6880（需要手动填 Aria2 RPC）",
     "show_after_install": true
   },
   {
     "id": "frps",
-    "name": "内网穿透服务端（FRP Server）",
+    "name": "内网穿透服务端",
     "image": "snowdreamtech/frps:latest",
     "ports": ["7000:7000", "7500:7500"],
     "volumes": ["/opt/apps/frps/frps.ini:/etc/frp/frps.ini"],
     "extra": "--restart=always",
-    "notes": "需要自己配置 frps.ini",
+    "notes": "需要自己准备 /opt/apps/frps/frps.ini",
     "show_after_install": true
   },
   {
     "id": "frpc",
-    "name": "内网穿透客户端（FRP Client）",
+    "name": "内网穿透客户端",
     "image": "snowdreamtech/frpc:latest",
     "ports": [],
     "volumes": ["/opt/apps/frpc/frpc.ini:/etc/frp/frpc.ini"],
     "extra": "--restart=always",
-    "notes": "需要自己配置 frpc.ini",
+    "notes": "需要自己准备 /opt/apps/frpc/frpc.ini",
     "show_after_install": true
   },
   {
     "id": "gitea",
-    "name": "代码仓库（Gitea，推荐Compose）",
+    "name": "代码仓库单机版",
     "image": "gitea/gitea:latest",
     "ports": ["3002:3000", "2222:22"],
     "volumes": ["/opt/apps/gitea/data:/data"],
     "extra": "--restart=always",
-    "notes": "访问：http://IP:3002  SSH端口：2222",
+    "notes": "访问：http://IP:3002 SSH端口：2222（推荐用带数据库的Compose版更稳）",
     "show_after_install": true
   },
   {
     "id": "gitea-stack",
-    "name": "代码仓库+数据库（Gitea Compose）",
+    "name": "代码仓库数据库版",
     "compose": "version: '3'\nservices:\n  db:\n    image: mariadb:11\n    container_name: gitea-db\n    restart: always\n    environment:\n      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}\n      - MYSQL_DATABASE=gitea\n      - MYSQL_USER=gitea\n      - MYSQL_PASSWORD=${MYSQL_PASSWORD}\n    volumes:\n      - /opt/apps/gitea-stack/db:/var/lib/mysql\n  gitea:\n    image: gitea/gitea:latest\n    container_name: gitea\n    restart: always\n    ports:\n      - \"3002:3000\"\n      - \"2222:22\"\n    environment:\n      - GITEA__database__DB_TYPE=mysql\n      - GITEA__database__HOST=db:3306\n      - GITEA__database__NAME=gitea\n      - GITEA__database__USER=gitea\n      - GITEA__database__PASSWD=${MYSQL_PASSWORD}\n    volumes:\n      - /opt/apps/gitea-stack/data:/data\n    depends_on:\n      - db\n",
     "ports": [],
     "volumes": [],
     "extra": "",
     "secrets": [
-      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "Gitea-DB Root 密码", "default": "root123456" },
-      { "key": "MYSQL_PASSWORD", "prompt": "Gitea-DB 用户密码", "default": "gitea123456" }
+      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "数据库root密码", "default": "root123456" },
+      { "key": "MYSQL_PASSWORD", "prompt": "数据库用户密码", "default": "gitea123456" }
     ],
-    "notes": "部署后访问：http://IP:3002  SSH端口：2222",
+    "notes": "部署后访问：http://IP:3002 SSH端口：2222",
     "show_after_install": true
   },
   {
     "id": "code-server",
-    "name": "网页IDE（Code Server）",
+    "name": "网页开发环境",
     "image": "lscr.io/linuxserver/code-server:latest",
     "ports": ["8444:8443"],
     "volumes": [
@@ -325,75 +304,75 @@
     "extra": "--restart=always",
     "env": ["PUID=1000", "PGID=1000", "TZ=Asia/Shanghai"],
     "secrets": [
-      { "key": "PASSWORD", "prompt": "Code-Server 登录密码", "default": "codeserver123456" }
+      { "key": "PASSWORD", "prompt": "登录密码", "default": "codeserver123456" }
     ],
     "notes": "访问：https://IP:8444",
     "show_after_install": true
   },
   {
     "id": "registry",
-    "name": "Docker 私有仓库（Registry）",
+    "name": "私有镜像仓库",
     "image": "registry:2",
     "ports": ["5000:5000"],
     "volumes": ["/opt/apps/registry/data:/var/lib/registry"],
     "extra": "--restart=always",
-    "notes": "访问：IP:5000（建议配合反代+认证）",
+    "notes": "地址：IP:5000（建议配合反代+认证）",
     "show_after_install": true
   },
   {
     "id": "minio",
-    "name": "对象存储（Minio）",
+    "name": "对象存储服务",
     "image": "minio/minio:latest",
     "ports": ["9001:9001", "9002:9000"],
     "volumes": ["/opt/apps/minio/data:/data"],
     "extra": "--restart=always",
     "env": ["MINIO_CONSOLE_ADDRESS=:9001"],
     "secrets": [
-      { "key": "MINIO_ROOT_USER", "prompt": "Minio 管理账号", "default": "minioadmin" },
-      { "key": "MINIO_ROOT_PASSWORD", "prompt": "Minio 管理密码", "default": "minioadmin123456" }
+      { "key": "MINIO_ROOT_USER", "prompt": "管理账号", "default": "minioadmin" },
+      { "key": "MINIO_ROOT_PASSWORD", "prompt": "管理密码", "default": "minioadmin123456" }
     ],
-    "notes": "控制台：http://IP:9001  API：http://IP:9002",
+    "notes": "控制台：http://IP:9001 API：http://IP:9002",
     "show_after_install": true
   },
   {
     "id": "redis",
-    "name": "缓存数据库（Redis）",
+    "name": "缓存数据库",
     "image": "redis:7-alpine",
     "ports": ["6379:6379"],
     "volumes": ["/opt/apps/redis/data:/data"],
     "extra": "--restart=always",
-    "notes": "默认无密码（生产建议加 requirepass 或仅内网）",
+    "notes": "默认无密码（建议仅内网或加密码）",
     "show_after_install": true
   },
   {
     "id": "postgres",
-    "name": "数据库（PostgreSQL）",
+    "name": "数据库一号",
     "image": "postgres:16",
     "ports": ["5432:5432"],
     "volumes": ["/opt/apps/postgres/data:/var/lib/postgresql/data"],
     "extra": "--restart=always",
     "secrets": [
-      { "key": "POSTGRES_PASSWORD", "prompt": "PostgreSQL 超级用户密码", "default": "postgres123456" }
+      { "key": "POSTGRES_PASSWORD", "prompt": "数据库密码", "default": "postgres123456" }
     ],
-    "notes": "端口：5432（建议内网使用或加防火墙限制）",
+    "notes": "端口：5432（建议限制外网访问）",
     "show_after_install": true
   },
   {
     "id": "mariadb",
-    "name": "数据库（MariaDB）",
+    "name": "数据库二号",
     "image": "mariadb:11",
     "ports": ["3306:3306"],
     "volumes": ["/opt/apps/mariadb/data:/var/lib/mysql"],
     "extra": "--restart=always",
     "secrets": [
-      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "MariaDB Root 密码", "default": "mariadb123456" }
+      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "数据库root密码", "default": "mariadb123456" }
     ],
-    "notes": "端口：3306（建议内网使用或加防火墙限制）",
+    "notes": "端口：3306（建议限制外网访问）",
     "show_after_install": true
   },
   {
     "id": "mongodb",
-    "name": "数据库（MongoDB）",
+    "name": "数据库三号",
     "image": "mongo:7",
     "ports": ["27017:27017"],
     "volumes": ["/opt/apps/mongodb/data:/data/db"],
@@ -403,20 +382,20 @@
   },
   {
     "id": "meilisearch",
-    "name": "搜索引擎（MeiliSearch）",
+    "name": "搜索引擎服务",
     "image": "getmeili/meilisearch:latest",
     "ports": ["7700:7700"],
     "volumes": ["/opt/apps/meilisearch/data:/meili_data"],
     "extra": "--restart=always",
     "secrets": [
-      { "key": "MEILI_MASTER_KEY", "prompt": "MeiliSearch 主密钥", "default": "meili123456masterkey" }
+      { "key": "MEILI_MASTER_KEY", "prompt": "主密钥", "default": "meili123456masterkey" }
     ],
     "notes": "访问：http://IP:7700（需要主密钥）",
     "show_after_install": true
   },
   {
     "id": "grafana",
-    "name": "可视化面板（Grafana）",
+    "name": "监控看板",
     "image": "grafana/grafana:latest",
     "ports": ["3003:3000"],
     "volumes": ["/opt/apps/grafana/data:/var/lib/grafana"],
@@ -426,7 +405,7 @@
   },
   {
     "id": "prometheus",
-    "name": "监控系统（Prometheus）",
+    "name": "监控采集服务",
     "image": "prom/prometheus:latest",
     "ports": ["9090:9090"],
     "volumes": [
@@ -439,17 +418,17 @@
   },
   {
     "id": "node-exporter",
-    "name": "主机监控（Node Exporter）",
+    "name": "主机指标采集",
     "image": "prom/node-exporter:latest",
     "ports": ["9100:9100"],
     "volumes": ["/proc:/host/proc:ro", "/sys:/host/sys:ro", "/:/rootfs:ro"],
     "extra": "--restart=always --net=host --pid=host",
-    "notes": "通常用于 Prometheus 抓取主机指标",
+    "notes": "用于 Prometheus 抓主机指标（常用host网络）",
     "show_after_install": true
   },
   {
     "id": "dozzle",
-    "name": "容器日志面板（Dozzle）",
+    "name": "容器日志网页面板",
     "image": "amir20/dozzle:latest",
     "ports": ["9999:8080"],
     "volumes": ["/var/run/docker.sock:/var/run/docker.sock"],
@@ -459,7 +438,7 @@
   },
   {
     "id": "dashy",
-    "name": "导航页（Dashy）",
+    "name": "导航页一号",
     "image": "lissy93/dashy:latest",
     "ports": ["4000:80"],
     "volumes": ["/opt/apps/dashy/conf.yml:/app/public/conf.yml"],
@@ -469,7 +448,7 @@
   },
   {
     "id": "heimdall",
-    "name": "导航页（Heimdall）",
+    "name": "导航页二号",
     "image": "lscr.io/linuxserver/heimdall:latest",
     "ports": ["4001:80"],
     "volumes": ["/opt/apps/heimdall/config:/config"],
@@ -480,34 +459,34 @@
   },
   {
     "id": "nextcloud-stack",
-    "name": "网盘（Nextcloud Compose）",
+    "name": "私有网盘套件",
     "compose": "version: '3'\nservices:\n  db:\n    image: mariadb:11\n    container_name: nextcloud-db\n    restart: always\n    environment:\n      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}\n      - MYSQL_DATABASE=nextcloud\n      - MYSQL_USER=nextcloud\n      - MYSQL_PASSWORD=${MYSQL_PASSWORD}\n    volumes:\n      - /opt/apps/nextcloud-stack/db:/var/lib/mysql\n  app:\n    image: nextcloud:latest\n    container_name: nextcloud\n    restart: always\n    ports:\n      - \"8083:80\"\n    environment:\n      - MYSQL_HOST=db\n      - MYSQL_DATABASE=nextcloud\n      - MYSQL_USER=nextcloud\n      - MYSQL_PASSWORD=${MYSQL_PASSWORD}\n    volumes:\n      - /opt/apps/nextcloud-stack/app:/var/www/html\n    depends_on:\n      - db\n",
     "ports": [],
     "volumes": [],
     "extra": "",
     "secrets": [
-      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "Nextcloud-DB Root 密码", "default": "root123456" },
-      { "key": "MYSQL_PASSWORD", "prompt": "Nextcloud-DB 用户密码", "default": "nextcloud123456" }
+      { "key": "MYSQL_ROOT_PASSWORD", "prompt": "数据库root密码", "default": "root123456" },
+      { "key": "MYSQL_PASSWORD", "prompt": "数据库用户密码", "default": "nextcloud123456" }
     ],
     "notes": "部署后访问：http://IP:8083（首次进入创建管理员）",
     "show_after_install": true
   },
   {
     "id": "immich-stack",
-    "name": "相册（Immich Compose）",
+    "name": "相册套件",
     "compose": "version: '3.8'\nservices:\n  immich-postgres:\n    image: postgres:16\n    container_name: immich-postgres\n    restart: always\n    environment:\n      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}\n      - POSTGRES_USER=immich\n      - POSTGRES_DB=immich\n    volumes:\n      - /opt/apps/immich-stack/postgres:/var/lib/postgresql/data\n  immich-redis:\n    image: redis:7-alpine\n    container_name: immich-redis\n    restart: always\n  immich-server:\n    image: ghcr.io/immich-app/immich-server:release\n    container_name: immich-server\n    restart: always\n    ports:\n      - \"2283:3001\"\n    environment:\n      - DB_HOSTNAME=immich-postgres\n      - DB_USERNAME=immich\n      - DB_PASSWORD=${POSTGRES_PASSWORD}\n      - DB_DATABASE_NAME=immich\n      - REDIS_HOSTNAME=immich-redis\n    volumes:\n      - /opt/apps/immich-stack/upload:/usr/src/app/upload\n    depends_on:\n      - immich-postgres\n      - immich-redis\n",
     "ports": [],
     "volumes": [],
     "extra": "",
     "secrets": [
-      { "key": "POSTGRES_PASSWORD", "prompt": "Immich 数据库密码", "default": "immich123456" }
+      { "key": "POSTGRES_PASSWORD", "prompt": "数据库密码", "default": "immich123456" }
     ],
     "notes": "部署后访问：http://IP:2283",
     "show_after_install": true
   },
   {
     "id": "calibre-web",
-    "name": "电子书（Calibre Web）",
+    "name": "电子书管理",
     "image": "lscr.io/linuxserver/calibre-web:latest",
     "ports": ["8084:8083"],
     "volumes": [
@@ -521,7 +500,7 @@
   },
   {
     "id": "komga",
-    "name": "漫画库（Komga）",
+    "name": "漫画管理",
     "image": "gotson/komga:latest",
     "ports": ["25600:25600"],
     "volumes": [
@@ -534,7 +513,7 @@
   },
   {
     "id": "prowlarr",
-    "name": "索引管理（Prowlarr）",
+    "name": "索引管理",
     "image": "lscr.io/linuxserver/prowlarr:latest",
     "ports": ["9696:9696"],
     "volumes": ["/opt/apps/prowlarr/config:/config"],
@@ -545,7 +524,7 @@
   },
   {
     "id": "sonarr",
-    "name": "剧集管理（Sonarr）",
+    "name": "剧集管理",
     "image": "lscr.io/linuxserver/sonarr:latest",
     "ports": ["8989:8989"],
     "volumes": [
@@ -560,7 +539,7 @@
   },
   {
     "id": "radarr",
-    "name": "电影管理（Radarr）",
+    "name": "电影管理",
     "image": "lscr.io/linuxserver/radarr:latest",
     "ports": ["7878:7878"],
     "volumes": [
@@ -575,7 +554,7 @@
   },
   {
     "id": "bazarr",
-    "name": "字幕管理（Bazarr）",
+    "name": "字幕管理",
     "image": "lscr.io/linuxserver/bazarr:latest",
     "ports": ["6767:6767"],
     "volumes": [
@@ -589,17 +568,17 @@
   },
   {
     "id": "plausible",
-    "name": "网站统计（Plausible）",
+    "name": "网站统计面板",
     "image": "ghcr.io/plausible/community-edition:latest",
     "ports": ["8000:8000"],
     "volumes": ["/opt/apps/plausible/data:/var/lib/plausible"],
     "extra": "--restart=always",
-    "notes": "访问：http://IP:8000（建议使用 compose 搭配数据库更完整）",
+    "notes": "访问：http://IP:8000（建议用完整Compose部署数据库更稳定）",
     "show_after_install": true
   },
   {
     "id": "nocodb",
-    "name": "在线表格（NocoDB）",
+    "name": "在线表格系统",
     "image": "nocodb/nocodb:latest",
     "ports": ["8085:8080"],
     "volumes": ["/opt/apps/nocodb/data:/usr/app/data"],
@@ -609,7 +588,7 @@
   },
   {
     "id": "memos",
-    "name": "轻量笔记（Memos）",
+    "name": "轻量笔记系统",
     "image": "neosmemo/memos:latest",
     "ports": ["5230:5230"],
     "volumes": ["/opt/apps/memos:/var/opt/memos"],
@@ -619,7 +598,7 @@
   },
   {
     "id": "gokapi",
-    "name": "文件分享（Gokapi）",
+    "name": "文件分享系统",
     "image": "f0rc3/gokapi:latest",
     "ports": ["5380:5380"],
     "volumes": ["/opt/apps/gokapi/data:/app/data"],
@@ -629,7 +608,7 @@
   },
   {
     "id": "gotify",
-    "name": "推送服务（Gotify）",
+    "name": "推送通知系统",
     "image": "gotify/server:latest",
     "ports": ["8086:80"],
     "volumes": ["/opt/apps/gotify/data:/app/data"],
@@ -639,19 +618,19 @@
   },
   {
     "id": "wg-easy",
-    "name": "VPN 面板（WireGuard Easy）",
+    "name": "一键VPN面板",
     "image": "weejewel/wg-easy:latest",
     "ports": ["51821:51821/tcp", "51820:51820/udp"],
     "volumes": ["/opt/apps/wg-easy:/etc/wireguard"],
     "extra": "--restart=always",
     "env": ["WG_HOST=YOUR_SERVER_IP"],
-    "notes": "访问：http://IP:51821（建议改 WG_HOST 为你的域名或公网IP）",
+    "notes": "访问：http://IP:51821（建议把 WG_HOST 改成你的公网IP或域名）",
     "show_after_install": true
   },
   {
     "id": "speedtest-tracker",
-    "name": "网络测速面板（Speedtest Tracker）",
-    "image": "linuxserver/speedtest-tracker:latest",
+    "name": "网络测速面板",
+    "image": "lscr.io/linuxserver/speedtest-tracker:latest",
     "ports": ["8765:80"],
     "volumes": ["/opt/apps/speedtest-tracker/config:/config"],
     "extra": "--restart=always",
