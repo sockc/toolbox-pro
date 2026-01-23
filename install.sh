@@ -12,10 +12,11 @@ fi
 echo "[1/4] 安装依赖..."
 bash <(curl -fsSL "${REPO_RAW}/scripts/deps.sh")
 
-echo "[2/4] 拉取核心菜单..."
-mkdir -p "${INSTALL_DIR}/core" "${INSTALL_DIR}/modules" "${INSTALL_DIR}/scripts"
+echo "[2/4] 拉取核心文件..."
+mkdir -p "${INSTALL_DIR}/core" "${INSTALL_DIR}/modules" "${INSTALL_DIR}/config"
 curl -fsSL "${REPO_RAW}/core/menu.sh" -o "${INSTALL_DIR}/core/menu.sh"
 curl -fsSL "${REPO_RAW}/core/common.sh" -o "${INSTALL_DIR}/core/common.sh"
+curl -fsSL "${REPO_RAW}/core/version.txt" -o "${INSTALL_DIR}/core/version.txt"
 chmod +x "${INSTALL_DIR}/core/menu.sh"
 
 echo "[3/4] 创建快捷命令：toolbox"
