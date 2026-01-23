@@ -58,6 +58,7 @@ force_update_all() {
     "modules/download/download.sh" \
     "modules/ssh/ssh.sh"
     "modules/firewall/firewall.sh"
+    "modules/proxy/proxy.sh"
   do
     fetch "$m" "${INSTALL_DIR}/${m}" || true
     chmod +x "${INSTALL_DIR}/${m}" 2>/dev/null || true
