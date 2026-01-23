@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_RAW="https://raw.githubusercontent.com/你的用户名/你的仓库/main"
+REPO_RAW="https://raw.githubusercontent.com/vinchi008/toolbox-pro/main"
 INSTALL_DIR="/opt/server-toolbox"
 
 if [[ "${EUID}" -ne 0 ]]; then
