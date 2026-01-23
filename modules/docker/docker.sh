@@ -3,77 +3,109 @@ set -euo pipefail
 source /opt/server-toolbox/core/common.sh
 need_root
 
+CFG="/opt/server-toolbox/config/containers.json"
+[[ -f "$CFG" ]] || { err "缺少配置：$CFG"; exit 1; }
+
 install_docker() {
   if command -v docker >/dev/null 2>&1; then
     ok "Docker 已安装：$(docker --version)"
     return
   fi
-
   info "安装 Docker（官方脚本）..."
   curl -fsSL https://get.docker.com | sh
   systemctl enable --now docker
   ok "Docker 安装完成 ✅"
 }
 
-install_compose_plugin() {
-  if docker compose version >/dev/null 2>&1; then
-    ok "Docker Compose 已可用：$(docker compose version)"
-    return
+ensure_volume() {
+  local v="$1"
+  if [[ "$v" == *":"* ]]; then
+    # bind mount or sock
+    return 0
   fi
-  warn "你的 Docker 可能较老，建议升级 Docker 后再试"
+  # named volume
+  docker volume create "$v" >/dev/null 2>&1 || true
 }
 
-portainer_install() {
+run_container_by_idx() {
+  local idx="$1"
+  local id image name extra
+  id="$(jq -r ".[$idx].id" "$CFG")"
+  name="$(jq -r ".[$idx].name" "$CFG")"
+  image="$(jq -r ".[$idx].image" "$CFG")"
+  extra="$(jq -r ".[$idx].extra // \"\"" "$CFG")"
+
+  [[ -n "$id" && "$id" != "null" ]] || { warn "无效容器"; return; }
+
   install_docker
-  docker volume create portainer_data >/dev/null 2>&1 || true
-  docker rm -f portainer >/dev/null 2>&1 || true
-  docker run -d \
-    --name portainer \
-    --restart=always \
-    -p 9000:9000 \
-    -p 9443:9443 \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v portainer_data:/data \
-    portainer/portainer-ce:latest
-  ok "Portainer 已启动 ✅ 访问：https://你的IP:9443"
+  mkdir -p "/opt/apps/${id}" 2>/dev/null || true
+
+  info "准备部署：$name ($id)"
+  info "镜像：$image"
+
+  # 删除旧容器
+  docker rm -f "$id" >/dev/null 2>&1 || true
+
+  # 组装参数
+  local ports volumes envs
+  ports="$(jq -r ".[$idx].ports[]? // empty" "$CFG" | awk '{print "-p "$0}' | tr '\n' ' ')"
+  volumes="$(jq -r ".[$idx].volumes[]? // empty" "$CFG" | while read -r v; do
+      if [[ "$v" == *":"* ]]; then
+        echo "-v $v"
+      else
+        ensure_volume "$v"
+        echo "-v $v"
+      fi
+    done | tr '\n' ' ')"
+  envs="$(jq -r ".[$idx].env[]? // empty" "$CFG" | awk '{print "-e "$0}' | tr '\n' ' ')"
+
+  # shellcheck disable=SC2086
+  docker run -d --name "$id" $ports $volumes $envs $extra "$image" >/dev/null
+
+  ok "已启动 ✅ $name"
+  docker ps --filter "name=^/${id}$" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 }
 
-watchtower_install() {
+uninstall_container_by_idx() {
+  local idx="$1"
+  local id name
+  id="$(jq -r ".[$idx].id" "$CFG")"
+  name="$(jq -r ".[$idx].name" "$CFG")"
+  docker rm -f "$id" >/dev/null 2>&1 || true
+  ok "已移除容器 ✅ $name"
+}
+
+show_status() {
   install_docker
-  docker rm -f watchtower >/dev/null 2>&1 || true
-  docker run -d \
-    --name watchtower \
-    --restart=always \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    containrrr/watchtower:latest \
-    --cleanup --schedule "0 0 4 * * *"
-  ok "Watchtower 已启动 ✅ 每天 04:00 自动更新容器"
-}
-
-docker_cleanup() {
-  info "清理无用镜像/容器/网络..."
-  docker system prune -af --volumes
-  ok "清理完成 ✅"
+  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 }
 
 while true; do
   clear
-  echo "=========== Docker 管理 ==========="
-  echo "1) 安装 Docker"
-  echo "2) 检查 Compose"
-  echo "3) 安装 Portainer"
-  echo "4) 安装 Watchtower（自动更新容器）"
-  echo "5) Docker 清理（危险）"
+  echo "=========== Docker 容器管理（配置化） ==========="
+  echo "a) 查看容器状态"
+  jq -r 'to_entries[] | "\(.key+1)) \(.value.name) [\(.value.id)]"' "$CFG"
+  echo "u) 卸载某个容器"
   echo "0) 返回"
   echo
-  read -r -p "请选择: " c
+  read -r -p "选择（数字部署/重装 | a状态 | u卸载 | 0返回）: " c
+
   case "$c" in
-    1) install_docker; read -r -p "回车继续..." _ ;;
-    2) install_compose_plugin; read -r -p "回车继续..." _ ;;
-    3) portainer_install; read -r -p "回车继续..." _ ;;
-    4) watchtower_install; read -r -p "回车继续..." _ ;;
-    5) docker_cleanup; read -r -p "回车继续..." _ ;;
     0) exit 0 ;;
-    *) warn "无效选项"; sleep 1 ;;
+    a) show_status; read -r -p "回车继续..." _ ;;
+    u)
+      read -r -p "输入要卸载的序号: " n
+      [[ "$n" =~ ^[0-9]+$ ]] || { warn "请输入数字"; sleep 1; continue; }
+      uninstall_container_by_idx $((n-1))
+      read -r -p "回车继续..." _
+      ;;
+    *)
+      if [[ "$c" =~ ^[0-9]+$ ]]; then
+        run_container_by_idx $((c-1))
+        read -r -p "回车继续..." _
+      else
+        warn "无效选项"; sleep 1
+      fi
+      ;;
   esac
 done
