@@ -30,6 +30,7 @@ while true; do
   echo "7) 反代工具（Caddy/NPM）"
   echo "8) 系统急救菜单（DNS/网络/磁盘/Docker/日志）"
   echo "9) 手动更新（从 GitHub 拉最新）"
+  echo "10) Fail2ban 防护中心（SSH暴力破解封禁）"
   echo "0) 退出"
   echo
   read -r -p "请输入选项 [0-6/9]: " c
@@ -44,6 +45,7 @@ while true; do
     7) run_mod "modules/proxy/proxy.sh" ;;
     8) run_mod "modules/rescue/rescue.sh" ;;
     9) force_update_all; read -r -p "回车继续..." _ ;;
+    10) bash /opt/server-toolbox/modules/fail2ban/fail2ban.sh ;;
     0) echo "Bye 👋"; exit 0 ;;
     *) warn "无效选项"; sleep 1 ;;
   esac
