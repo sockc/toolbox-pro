@@ -10,6 +10,8 @@ auto_hot_update
 
 run_mod() {
   local rel="$1"
+  fetch_if_missing "config/containers.json"
+  fetch_if_missing "config/plugins.json"
   fetch_if_missing "$rel"
   bash "${INSTALL_DIR}/${rel}"
 }
