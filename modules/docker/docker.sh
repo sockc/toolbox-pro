@@ -1,4 +1,3 @@
-cat >/opt/server-toolbox/modules/docker/docker.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 source /opt/server-toolbox/core/common.sh
@@ -60,14 +59,12 @@ write_env_file() {
       key="$(jq -r ".[$idx].secrets[$i].key" "$CFG")"
       prompt="$(jq -r ".[$idx].secrets[$i].prompt" "$CFG")"
       def="$(jq -r ".[$idx].secrets[$i].default // \"\"" "$CFG")"
-
       echo
       read -r -p "${prompt} [默认: ${def}]: " val
       val="${val:-$def}"
       echo "${key}=${val}" >>"$envfile"
     done
   fi
-
   ok "已生成环境文件：$envfile"
 }
 
@@ -110,7 +107,7 @@ deploy_run_by_idx() {
   check_port_conflicts "$idx" || return
   write_env_file "$id" "$idx"
 
-  info "部署：$name [$id]"
+  info "部署：$name"
   docker rm -f "$id" >/dev/null 2>&1 || true
 
   local ports volumes
@@ -121,7 +118,7 @@ deploy_run_by_idx() {
   docker run -d --name "$id" \
     --env-file "/opt/apps/${id}/.env" \
     $ports $volumes $extra "$image" >/dev/null 2>&1 || {
-      warn "启动失败：$id（可能镜像拉取失败/参数不兼容/端口冲突）"
+      warn "启动失败：$id（镜像/参数/端口冲突）"
       return
     }
 
@@ -188,16 +185,19 @@ update_all_images() {
 }
 
 show_list_with_status() {
-  local total
+  local total cols colw
   total="$(jq 'length' "$CFG" 2>/dev/null || echo 0)"
+  cols="$(tput cols 2>/dev/null || echo 120)"
+  colw=$((cols/2))
+  [[ $colw -lt 55 ]] && colw=55
 
+  local lines=()
   for i in $(seq 0 $((total-1))); do
     local id name state icon ports
     id="$(jq -r ".[$i].id" "$CFG")"
     name="$(jq -r ".[$i].name" "$CFG")"
 
     icon="⚪"; state="未安装"; ports="-"
-
     if command -v docker >/dev/null 2>&1; then
       if docker inspect "$id" >/dev/null 2>&1; then
         local running health
@@ -226,7 +226,18 @@ show_list_with_status() {
       fi
     fi
 
-    printf "%2d) %s %s [%s]  (%s)  %s\n" "$((i+1))" "$icon" "$name" "$id" "$state" "$ports"
+    lines+=("$(printf "%2d) %s %s (%s) %s" "$((i+1))" "$icon" "$name" "$state" "$ports")")
+  done
+
+  local k=0
+  while [[ $k -lt ${#lines[@]} ]]; do
+    local left="${lines[$k]}"
+    local right=""
+    if [[ $((k+1)) -lt ${#lines[@]} ]]; then
+      right="${lines[$((k+1))]}"
+    fi
+    printf "%-${colw}s%s\n" "$left" "$right"
+    k=$((k+2))
   done
 }
 
@@ -252,7 +263,7 @@ show_web_access_by_idx() {
 
   echo
   echo "========== 一键访问地址 =========="
-  echo "容器: $name [$id]"
+  echo "容器: $name"
   [[ -n "$notes" && "$notes" != "null" ]] && echo "提示: $notes"
   echo "服务器: $ip"
   echo
@@ -263,14 +274,13 @@ show_web_access_by_idx() {
   done < <(jq -r ".[$idx].ports[]? // empty" "$CFG")
 
   if [[ "${#ports[@]}" -eq 0 ]]; then
-    warn "该容器配置中没有 ports 字段，无法推断 Web 地址"
-    command -v docker >/dev/null 2>&1 && docker ps --filter "name=^/${id}$" --format '{{.Ports}}' || true
+    warn "该容器配置中没有 ports，无法推断 Web 地址"
     echo "================================="
     echo
     return
   fi
 
-  local web_candidates=("443" "9443" "8443" "81" "80" "8080" "8081" "8082" "3000" "3001" "9000" "9090" "2283" "5244")
+  local web_candidates=("443" "9443" "8443" "81" "80" "8080" "8081" "8082" "3000" "3001" "9000" "9090" "2283" "5244" "16601" "9876")
   local host_ports=()
 
   for pm in "${ports[@]}"; do
@@ -315,12 +325,11 @@ show_web_access_by_idx() {
   echo
 }
 
-# ===================== 菜单循环 =====================
 while true; do
   clear
   echo "=========== Docker 容器中心 PRO ==========="
   echo "输入说明："
-  echo "  数字   = 运行部署/重装（run）"
+  echo "  数字   = 运行部署/重装"
   echo "  c数字  = Compose部署（如 c40）"
   echo "  l数字  = 查看日志"
   echo "  e数字  = 进入容器"
@@ -334,59 +343,27 @@ while true; do
 
   show_list_with_status
   echo
-
   read -r -p "请输入: " c
 
   case "$c" in
     0) exit 0 ;;
-    s)
-      install_docker
-      docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-      read -r -p "回车继续..." _
-      ;;
-    u)
-      update_all_images
-      read -r -p "回车继续..." _
-      ;;
+    s) install_docker; docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"; read -r -p "回车继续..." _ ;;
+    u) update_all_images; read -r -p "回车继续..." _ ;;
     [0-9]*)
-      deploy_run_by_idx $((c-1))
-      read -r -p "回车继续..." _
-      ;;
+      deploy_run_by_idx $((c-1)); read -r -p "回车继续..." _ ;;
     c[0-9]*)
-      n="${c#c}"
-      deploy_compose_by_idx $((n-1))
-      read -r -p "回车继续..." _
-      ;;
+      n="${c#c}"; deploy_compose_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
     l[0-9]*)
-      n="${c#l}"
-      logs_by_idx $((n-1))
-      ;;
+      n="${c#l}"; logs_by_idx $((n-1)) ;;
     e[0-9]*)
-      n="${c#e}"
-      exec_by_idx $((n-1))
-      ;;
+      n="${c#e}"; exec_by_idx $((n-1)) ;;
     r[0-9]*)
-      n="${c#r}"
-      restart_by_idx $((n-1))
-      read -r -p "回车继续..." _
-      ;;
+      n="${c#r}"; restart_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
     d[0-9]*)
-      n="${c#d}"
-      delete_by_idx $((n-1))
-      read -r -p "回车继续..." _
-      ;;
+      n="${c#d}"; delete_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
     w[0-9]*)
-      n="${c#w}"
-      show_web_access_by_idx $((n-1))
-      read -r -p "回车继续..." _
-      ;;
+      n="${c#w}"; show_web_access_by_idx $((n-1)); read -r -p "回车继续..." _ ;;
     *)
-      warn "无效输入"
-      sleep 1
-      ;;
+      warn "无效输入"; sleep 1 ;;
   esac
 done
-EOF
-
-chmod +x /opt/server-toolbox/modules/docker/docker.sh
-bash -n /opt/server-toolbox/modules/docker/docker.sh && echo "[OK] docker.sh 语法正常 ✅"
