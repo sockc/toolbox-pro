@@ -43,7 +43,7 @@ Server Toolbox PRO  (Docker + System + SSH)
 > 安装完成会创建快捷命令：`toolbox`
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vinchi008/toolbox-pro/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sockc/toolbox-pro/main/install.sh | bash
 ```
 
 
@@ -55,7 +55,7 @@ toolbox
 一键安装：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vinchi008/toolbox-pro/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sockc/toolbox-pro/main/install.sh | bash
 ```
 快捷进入菜单
 ```bash
