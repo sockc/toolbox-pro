@@ -44,8 +44,7 @@ Server Toolbox PRO  (Docker + System + SSH)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vinchi008/toolbox-pro/main/install.sh | bash
-
-
+```
 
 
 # Server Toolbox
@@ -61,3 +60,4 @@ curl -fsSL https://raw.githubusercontent.com/vinchi008/toolbox-pro/main/install.
 快捷进入菜单
 ```bash
 toolbox
+```
