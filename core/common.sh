@@ -2,7 +2,7 @@
 set -euo pipefail
 
 INSTALL_DIR="/opt/server-toolbox"
-REPO_RAW="https://raw.githubusercontent.com/vinchi008/toolbox-pro/main"
+REPO_RAW="https://raw.githubusercontent.com/sockc/toolbox-pro/main"
 
 c() {
   case "$1" in
@@ -85,7 +85,12 @@ auto_hot_update() {
     local_ver="$(cat "${INSTALL_DIR}/core/version.txt" 2>/dev/null || echo 0)"
   fi
 
-  remote_ver="$(curl -fsSL "${REPO_RAW}/core/version.txt" 2>/dev/null || echo 0)"
+  remote_ver="$(curl -fsSL "${REPO_RAW}/core/version.txt" 2>/dev/null || true)"
+  remote_ver="$(printf '%s' "$remote_ver" | tr -d '\r\n ')"
+
+  # 网络失败或返回内容异常时保持当前版本，不把“检查失败”误判为新版本。
+  [[ -n "$remote_ver" ]] || return 0
+  [[ "$remote_ver" =~ ^[0-9]+(\.[0-9]+){1,3}([.-][0-9A-Za-z]+)?$ ]] || return 0
 
   if [[ "$remote_ver" != "$local_ver" ]]; then
     info "检测到新版本：${local_ver} -> ${remote_ver}，自动热更新..."
