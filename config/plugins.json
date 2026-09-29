@@ -1,68 +1,783 @@
 [
   {
-    "name": "ctop（容器监控 TUI）",
-    "check": "command -v ctop",
-    "install": "set -e; ARCH=$(uname -m); case \"$ARCH\" in x86_64|amd64) A=amd64 ;; aarch64|arm64) A=arm64 ;; armv7l|armv7) A=arm ;; *) echo \"不支持的架构: $ARCH\"; exit 1 ;; esac; URL=\"https://github.com/bcicen/ctop/releases/latest/download/ctop-0.7.7-linux-${A}\"; curl -fsSL \"$URL\" -o /usr/local/bin/ctop && chmod +x /usr/local/bin/ctop",
-    "desc": "终端里的 Docker 容器监控（类似 top）"
-  },
-  {
-    "name": "lazydocker（Docker 管理 TUI）",
-    "check": "command -v lazydocker",
-    "install": "set -e; curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash",
-    "desc": "终端里操作 Docker 的神器（很爽）"
-  },
-  {
-    "name": "btop（系统资源监控）",
-    "check": "command -v btop",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y btop; elif command -v dnf >/dev/null 2>&1; then dnf install -y btop; elif command -v yum >/dev/null 2>&1; then yum install -y epel-release || true; yum install -y btop || true; elif command -v apk >/dev/null 2>&1; then apk add --no-cache btop; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "比 htop 更高级的监控面板"
-  },
-  {
-    "name": "tmux（终端分屏）",
-    "check": "command -v tmux",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y tmux; elif command -v dnf >/dev/null 2>&1; then dnf install -y tmux; elif command -v yum >/dev/null 2>&1; then yum install -y tmux; elif command -v apk >/dev/null 2>&1; then apk add --no-cache tmux; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "SSH 断线也不怕，后台继续跑"
-  },
-  {
-    "name": "fastfetch（系统信息展示，neofetch替代）",
-    "check": "command -v fastfetch",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y fastfetch || (apt install -y curl && curl -fsSL https://raw.githubusercontent.com/fastfetch-cli/fastfetch/master/install.sh | bash); elif command -v dnf >/dev/null 2>&1; then dnf install -y fastfetch || true; elif command -v yum >/dev/null 2>&1; then yum install -y fastfetch || true; elif command -v apk >/dev/null 2>&1; then apk add --no-cache fastfetch || true; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "系统信息更快更现代（Debian12 更推荐它）"
-  },
-  {
-    "name": "neofetch（系统信息展示，旧版）",
-    "check": "command -v neofetch",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y neofetch || true; elif command -v dnf >/dev/null 2>&1; then dnf install -y neofetch || true; elif command -v yum >/dev/null 2>&1; then yum install -y neofetch || true; elif command -v apk >/dev/null 2>&1; then apk add --no-cache neofetch || true; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "有些系统仓库没有它，装不上也正常"
-  },
-  {
-    "name": "jq（JSON 解析工具）",
+    "id": "jq",
+    "name": "JSON 解析",
+    "tool": "jq",
+    "category": "基础工具",
+    "desc": "查看、筛选和处理 JSON，Toolbox 自身也会用到。",
     "check": "command -v jq",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y jq; elif command -v dnf >/dev/null 2>&1; then dnf install -y jq; elif command -v yum >/dev/null 2>&1; then yum install -y jq; elif command -v apk >/dev/null 2>&1; then apk add --no-cache jq; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "你的工具箱很多地方都靠它"
+    "install_type": "package",
+    "packages": {
+      "apt": "jq",
+      "dnf": "jq",
+      "yum": "jq",
+      "apk": "jq"
+    },
+    "run": "jq --version",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://jqlang.github.io/jq/"
   },
   {
-    "name": "ncdu（磁盘占用分析）",
+    "id": "git",
+    "name": "Git 代码管理",
+    "tool": "git",
+    "category": "基础工具",
+    "desc": "克隆、拉取和管理 Git 仓库。",
+    "check": "command -v git",
+    "install_type": "package",
+    "packages": {
+      "apt": "git",
+      "dnf": "git",
+      "yum": "git",
+      "apk": "git"
+    },
+    "run": "git --version",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://git-scm.com/"
+  },
+  {
+    "id": "tree",
+    "name": "目录树查看",
+    "tool": "tree",
+    "category": "基础工具",
+    "desc": "用树状结构查看目录和文件。",
+    "check": "command -v tree",
+    "install_type": "package",
+    "packages": {
+      "apt": "tree",
+      "dnf": "tree",
+      "yum": "tree",
+      "apk": "tree"
+    },
+    "run": "tree --version | head -n1",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://oldmanprogrammer.net/source.php?dir=projects/tree"
+  },
+  {
+    "id": "unzip",
+    "name": "ZIP 解压",
+    "tool": "unzip",
+    "category": "基础工具",
+    "desc": "处理常见 ZIP 压缩包。",
+    "check": "command -v unzip",
+    "install_type": "package",
+    "packages": {
+      "apt": "unzip",
+      "dnf": "unzip",
+      "yum": "unzip",
+      "apk": "unzip"
+    },
+    "run": "unzip -v | head -n2",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://infozip.sourceforge.net/"
+  },
+  {
+    "id": "zstd",
+    "name": "Zstandard 压缩",
+    "tool": "zstd",
+    "category": "基础工具",
+    "desc": "高速压缩/解压 .zst 文件。",
+    "check": "command -v zstd",
+    "install_type": "package",
+    "packages": {
+      "apt": "zstd",
+      "dnf": "zstd",
+      "yum": "zstd",
+      "apk": "zstd"
+    },
+    "run": "zstd --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://facebook.github.io/zstd/"
+  },
+  {
+    "id": "btop",
+    "name": "实时系统资源监控",
+    "tool": "btop",
+    "category": "系统监控",
+    "desc": "图形化查看 CPU、内存、磁盘、网络和进程。",
+    "check": "command -v btop",
+    "install_type": "package",
+    "packages": {
+      "apt": "btop",
+      "dnf": "btop",
+      "yum": "btop",
+      "apk": "btop"
+    },
+    "run": "btop",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://github.com/aristocratos/btop"
+  },
+  {
+    "id": "htop",
+    "name": "进程与资源监控",
+    "tool": "htop",
+    "category": "系统监控",
+    "desc": "交互式查看和管理进程。",
+    "check": "command -v htop",
+    "install_type": "package",
+    "packages": {
+      "apt": "htop",
+      "dnf": "htop",
+      "yum": "htop",
+      "apk": "htop"
+    },
+    "run": "htop",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://htop.dev/"
+  },
+  {
+    "id": "glances",
+    "name": "综合性能监控",
+    "tool": "glances",
+    "category": "系统监控",
+    "desc": "集中查看 CPU、内存、磁盘、网络、进程等指标。",
+    "check": "command -v glances",
+    "install_type": "package",
+    "packages": {
+      "apt": "glances",
+      "dnf": "glances",
+      "yum": "glances",
+      "apk": "glances"
+    },
+    "run": "glances",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://nicolargo.github.io/glances/"
+  },
+  {
+    "id": "fastfetch",
+    "name": "服务器信息展示",
+    "tool": "fastfetch",
+    "category": "系统监控",
+    "desc": "快速显示系统、CPU、内存、内核、发行版等信息。",
+    "check": "command -v fastfetch",
+    "install_type": "package",
+    "packages": {
+      "apt": "fastfetch",
+      "dnf": "fastfetch",
+      "yum": "fastfetch",
+      "apk": "fastfetch"
+    },
+    "run": "fastfetch",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/fastfetch-cli/fastfetch"
+  },
+  {
+    "id": "ncdu",
+    "name": "磁盘空间分析",
+    "tool": "ncdu",
+    "category": "磁盘与性能",
+    "desc": "快速找出最占磁盘空间的目录和文件。",
     "check": "command -v ncdu",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y ncdu; elif command -v dnf >/dev/null 2>&1; then dnf install -y ncdu; elif command -v yum >/dev/null 2>&1; then yum install -y ncdu; elif command -v apk >/dev/null 2>&1; then apk add --no-cache ncdu; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "快速揪出磁盘爆满元凶"
+    "install_type": "package",
+    "packages": {
+      "apt": "ncdu",
+      "dnf": "ncdu",
+      "yum": "ncdu",
+      "apk": "ncdu"
+    },
+    "run": "ncdu /",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://dev.yorhel.nl/ncdu"
   },
   {
-    "name": "lsof（端口占用查询）",
+    "id": "iotop",
+    "name": "磁盘 IO 进程监控",
+    "tool": "iotop",
+    "category": "磁盘与性能",
+    "desc": "查看哪些进程正在大量读写磁盘。",
+    "check": "command -v iotop || command -v iotop-c",
+    "install_type": "package",
+    "packages": {
+      "apt": "iotop-c",
+      "dnf": "iotop",
+      "yum": "iotop",
+      "apk": "iotop-c"
+    },
+    "run": "command -v iotop-c >/dev/null 2>&1 && iotop-c || iotop",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/Tomas-M/iotop"
+  },
+  {
+    "id": "smartmontools",
+    "name": "硬盘健康检查",
+    "tool": "smartctl",
+    "category": "磁盘与性能",
+    "desc": "读取 SMART 信息，检查 HDD/SSD 健康状态。",
+    "check": "command -v smartctl",
+    "install_type": "package",
+    "packages": {
+      "apt": "smartmontools",
+      "dnf": "smartmontools",
+      "yum": "smartmontools",
+      "apk": "smartmontools"
+    },
+    "run": "smartctl --version | head -n1",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://www.smartmontools.org/"
+  },
+  {
+    "id": "fio",
+    "name": "磁盘性能测试",
+    "tool": "fio",
+    "category": "磁盘与性能",
+    "desc": "专业磁盘 IOPS、吞吐和延迟测试工具。",
+    "check": "command -v fio",
+    "install_type": "package",
+    "packages": {
+      "apt": "fio",
+      "dnf": "fio",
+      "yum": "fio",
+      "apk": "fio"
+    },
+    "run": "fio --version",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://fio.readthedocs.io/"
+  },
+  {
+    "id": "sysbench",
+    "name": "CPU/数据库基准测试",
+    "tool": "sysbench",
+    "category": "磁盘与性能",
+    "desc": "测试 CPU、内存及数据库性能。",
+    "check": "command -v sysbench",
+    "install_type": "package",
+    "packages": {
+      "apt": "sysbench",
+      "dnf": "sysbench",
+      "yum": "sysbench",
+      "apk": "sysbench"
+    },
+    "run": "sysbench --version",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://github.com/akopytov/sysbench"
+  },
+  {
+    "id": "mtr",
+    "name": "网络丢包与路由诊断",
+    "tool": "mtr",
+    "category": "网络诊断",
+    "desc": "把 ping 和 traceroute 结合起来定位延迟、丢包和线路问题。",
+    "check": "command -v mtr",
+    "install_type": "package",
+    "packages": {
+      "apt": "mtr-tiny",
+      "dnf": "mtr",
+      "yum": "mtr",
+      "apk": "mtr"
+    },
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://www.bitwizard.nl/mtr/"
+  },
+  {
+    "id": "traceroute",
+    "name": "网络路由追踪",
+    "tool": "traceroute",
+    "category": "网络诊断",
+    "desc": "查看数据包经过哪些网络节点。",
+    "check": "command -v traceroute",
+    "install_type": "package",
+    "packages": {
+      "apt": "traceroute",
+      "dnf": "traceroute",
+      "yum": "traceroute",
+      "apk": "traceroute"
+    },
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://traceroute.sourceforge.net/"
+  },
+  {
+    "id": "nmap",
+    "name": "端口与服务扫描",
+    "tool": "nmap",
+    "category": "网络诊断",
+    "desc": "检查自己服务器或授权目标开放了哪些端口和服务。",
+    "check": "command -v nmap",
+    "install_type": "package",
+    "packages": {
+      "apt": "nmap",
+      "dnf": "nmap",
+      "yum": "nmap",
+      "apk": "nmap"
+    },
+    "run": "nmap --version | head -n1",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://nmap.org/"
+  },
+  {
+    "id": "iperf3",
+    "name": "服务器间网络测速",
+    "tool": "iperf3",
+    "category": "网络诊断",
+    "desc": "测试两台服务器之间的真实 TCP/UDP 吞吐。",
+    "check": "command -v iperf3",
+    "install_type": "package",
+    "packages": {
+      "apt": "iperf3",
+      "dnf": "iperf3",
+      "yum": "iperf3",
+      "apk": "iperf3"
+    },
+    "run": "iperf3 --version | head -n1",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://software.es.net/iperf/"
+  },
+  {
+    "id": "iftop",
+    "name": "实时连接流量监控",
+    "tool": "iftop",
+    "category": "网络诊断",
+    "desc": "查看哪些 IP 正在占用服务器带宽。",
+    "check": "command -v iftop",
+    "install_type": "package",
+    "packages": {
+      "apt": "iftop",
+      "dnf": "iftop",
+      "yum": "iftop",
+      "apk": "iftop"
+    },
+    "run": "iftop",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://pdw.ex-parrot.com/iftop/"
+  },
+  {
+    "id": "nload",
+    "name": "网卡实时流量",
+    "tool": "nload",
+    "category": "网络诊断",
+    "desc": "实时查看网卡上传和下载速度。",
+    "check": "command -v nload",
+    "install_type": "package",
+    "packages": {
+      "apt": "nload",
+      "dnf": "nload",
+      "yum": "nload",
+      "apk": "nload"
+    },
+    "run": "nload",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/rolandriegel/nload"
+  },
+  {
+    "id": "vnstat",
+    "name": "长期流量统计",
+    "tool": "vnstat",
+    "category": "网络诊断",
+    "desc": "按小时、天、月统计服务器网络流量。",
+    "check": "command -v vnstat",
+    "install_type": "package",
+    "packages": {
+      "apt": "vnstat",
+      "dnf": "vnstat",
+      "yum": "vnstat",
+      "apk": "vnstat"
+    },
+    "run": "vnstat",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://humdi.net/vnstat/"
+  },
+  {
+    "id": "lsof",
+    "name": "端口/文件占用查询",
+    "tool": "lsof",
+    "category": "网络诊断",
+    "desc": "快速查出某个端口或文件被哪个进程占用。",
     "check": "command -v lsof",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y lsof; elif command -v dnf >/dev/null 2>&1; then dnf install -y lsof; elif command -v yum >/dev/null 2>&1; then yum install -y lsof; elif command -v apk >/dev/null 2>&1; then apk add --no-cache lsof; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "查谁占了 80/443/22 一秒出结果"
+    "install_type": "package",
+    "packages": {
+      "apt": "lsof",
+      "dnf": "lsof",
+      "yum": "lsof",
+      "apk": "lsof"
+    },
+    "run": "lsof -v 2>&1 | head -n1",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://github.com/lsof-org/lsof"
   },
   {
-    "name": "net-tools（ifconfig/route 等传统命令）",
-    "check": "command -v ifconfig",
-    "install": "set -e; if command -v apt >/dev/null 2>&1; then apt update -y && apt install -y net-tools; elif command -v dnf >/dev/null 2>&1; then dnf install -y net-tools; elif command -v yum >/dev/null 2>&1; then yum install -y net-tools; elif command -v apk >/dev/null 2>&1; then apk add --no-cache net-tools; else echo \"不支持的包管理器\"; exit 1; fi",
-    "desc": "老教程必备（现代系统默认不带）"
+    "id": "socat",
+    "name": "端口转发与网络调试",
+    "tool": "socat",
+    "category": "网络诊断",
+    "desc": "TCP/UDP 转发、端口监听和网络调试。",
+    "check": "command -v socat",
+    "install_type": "package",
+    "packages": {
+      "apt": "socat",
+      "dnf": "socat",
+      "yum": "socat",
+      "apk": "socat"
+    },
+    "run": "socat -V | head -n1",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "http://www.dest-unreach.org/socat/"
   },
   {
-    "name": "DDNS-GO（动态域名解析）",
-    "check": "docker ps --format '{{.Names}}' | grep -qw ddns-go",
-    "install": "set -e; if ! command -v docker >/dev/null 2>&1; then curl -fsSL https://get.docker.com | sh; systemctl enable --now docker >/dev/null 2>&1 || true; fi; docker rm -f ddns-go >/dev/null 2>&1 || true; mkdir -p /opt/ddns-go; docker run -d --name ddns-go --restart=always --net=host -v /opt/ddns-go:/root jeessy/ddns-go",
-    "desc": "Web 管理：http://IP:9876（支持 Cloudflare/阿里云/腾讯云等）"
+    "id": "netcat",
+    "name": "TCP/UDP 连通测试",
+    "tool": "nc",
+    "category": "网络诊断",
+    "desc": "测试远程端口、监听端口和简单传输。",
+    "check": "command -v nc",
+    "install_type": "package",
+    "packages": {
+      "apt": "netcat-openbsd",
+      "dnf": "nmap-ncat",
+      "yum": "nmap-ncat",
+      "apk": "netcat-openbsd"
+    },
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://man.openbsd.org/nc"
+  },
+  {
+    "id": "dnsutils",
+    "name": "DNS 查询工具",
+    "tool": "dig",
+    "category": "网络诊断",
+    "desc": "查询 A/AAAA/MX/TXT/NS 等 DNS 记录。",
+    "check": "command -v dig",
+    "install_type": "package",
+    "packages": {
+      "apt": "dnsutils",
+      "dnf": "bind-utils",
+      "yum": "bind-utils",
+      "apk": "bind-tools"
+    },
+    "run": "dig -v",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://www.isc.org/bind/"
+  },
+  {
+    "id": "tmux",
+    "name": "SSH 断线任务保持",
+    "tool": "tmux",
+    "category": "终端与文件",
+    "desc": "SSH 断开后任务继续运行，也支持终端分屏。",
+    "check": "command -v tmux",
+    "install_type": "package",
+    "packages": {
+      "apt": "tmux",
+      "dnf": "tmux",
+      "yum": "tmux",
+      "apk": "tmux"
+    },
+    "run": "tmux",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://github.com/tmux/tmux"
+  },
+  {
+    "id": "screen",
+    "name": "后台终端会话",
+    "tool": "screen",
+    "category": "终端与文件",
+    "desc": "保持长期运行的终端任务。",
+    "check": "command -v screen",
+    "install_type": "package",
+    "packages": {
+      "apt": "screen",
+      "dnf": "screen",
+      "yum": "screen",
+      "apk": "screen"
+    },
+    "run": "screen -ls",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://www.gnu.org/software/screen/"
+  },
+  {
+    "id": "mc",
+    "name": "双栏文件管理器",
+    "tool": "mc",
+    "category": "终端与文件",
+    "desc": "在终端里像文件管理器一样复制、移动和浏览文件。",
+    "check": "command -v mc",
+    "install_type": "package",
+    "packages": {
+      "apt": "mc",
+      "dnf": "mc",
+      "yum": "mc",
+      "apk": "mc"
+    },
+    "run": "mc",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://midnight-commander.org/"
+  },
+  {
+    "id": "fzf",
+    "name": "模糊搜索选择器",
+    "tool": "fzf",
+    "category": "终端与文件",
+    "desc": "快速搜索文件、历史命令和列表内容。",
+    "check": "command -v fzf",
+    "install_type": "package",
+    "packages": {
+      "apt": "fzf",
+      "dnf": "fzf",
+      "yum": "fzf",
+      "apk": "fzf"
+    },
+    "run": "fzf --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/junegunn/fzf"
+  },
+  {
+    "id": "ripgrep",
+    "name": "高速文件内容搜索",
+    "tool": "rg",
+    "category": "终端与文件",
+    "desc": "比传统 grep 更方便地递归搜索文件内容。",
+    "check": "command -v rg",
+    "install_type": "package",
+    "packages": {
+      "apt": "ripgrep",
+      "dnf": "ripgrep",
+      "yum": "ripgrep",
+      "apk": "ripgrep"
+    },
+    "run": "rg --version | head -n1",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/BurntSushi/ripgrep"
+  },
+  {
+    "id": "rsync",
+    "name": "文件同步与服务器迁移",
+    "tool": "rsync",
+    "category": "下载与传输",
+    "desc": "可靠地同步目录、增量传输和迁移服务器数据。",
+    "check": "command -v rsync",
+    "install_type": "package",
+    "packages": {
+      "apt": "rsync",
+      "dnf": "rsync",
+      "yum": "rsync",
+      "apk": "rsync"
+    },
+    "run": "rsync --version | head -n1",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://rsync.samba.org/"
+  },
+  {
+    "id": "rclone",
+    "name": "云盘/对象存储同步",
+    "tool": "rclone",
+    "category": "下载与传输",
+    "desc": "同步 S3、R2、WebDAV、Google Drive 等远端存储。",
+    "check": "command -v rclone",
+    "install_type": "package",
+    "packages": {
+      "apt": "rclone",
+      "dnf": "rclone",
+      "yum": "rclone",
+      "apk": "rclone"
+    },
+    "run": "rclone version | head -n2",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://rclone.org/"
+  },
+  {
+    "id": "aria2",
+    "name": "多线程下载",
+    "tool": "aria2c",
+    "category": "下载与传输",
+    "desc": "HTTP/HTTPS/FTP/BitTorrent 多协议下载工具。",
+    "check": "command -v aria2c",
+    "install_type": "package",
+    "packages": {
+      "apt": "aria2",
+      "dnf": "aria2",
+      "yum": "aria2",
+      "apk": "aria2"
+    },
+    "run": "aria2c --version | head -n1",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://aria2.github.io/"
+  },
+  {
+    "id": "yt-dlp",
+    "name": "视频/媒体下载",
+    "tool": "yt-dlp",
+    "category": "下载与传输",
+    "desc": "下载受支持站点的视频、音频和字幕。",
+    "check": "command -v yt-dlp",
+    "install_type": "package",
+    "packages": {
+      "apt": "yt-dlp",
+      "dnf": "yt-dlp",
+      "yum": "yt-dlp",
+      "apk": "yt-dlp"
+    },
+    "run": "yt-dlp --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/yt-dlp/yt-dlp"
+  },
+  {
+    "id": "ctop",
+    "name": "Docker 容器实时监控",
+    "tool": "ctop",
+    "category": "Docker 工具",
+    "desc": "类似 top 的 Docker 容器 CPU、内存、网络监控。",
+    "check": "command -v ctop",
+    "install_type": "script",
+    "install": "set -e; ARCH=$(uname -m); case \"$ARCH\" in x86_64|amd64) A=amd64 ;; aarch64|arm64) A=arm64 ;; armv7l|armv7) A=arm ;; *) echo \"不支持的架构: $ARCH\"; exit 1 ;; esac; URL=$(curl -fsSL https://api.github.com/repos/bcicen/ctop/releases/latest | jq -r --arg a \"linux-${A}\" '.assets[] | select(.name | endswith($a)) | .browser_download_url' | head -n1); [ -n \"$URL\" ] && [ \"$URL\" != \"null\" ]; curl -fsSL \"$URL\" -o /usr/local/bin/ctop; chmod 755 /usr/local/bin/ctop",
+    "uninstall": "rm -f /usr/local/bin/ctop",
+    "upgrade": "rm -f /usr/local/bin/ctop; ARCH=$(uname -m); case \"$ARCH\" in x86_64|amd64) A=amd64 ;; aarch64|arm64) A=arm64 ;; armv7l|armv7) A=arm ;; *) exit 1 ;; esac; URL=$(curl -fsSL https://api.github.com/repos/bcicen/ctop/releases/latest | jq -r --arg a \"linux-${A}\" '.assets[] | select(.name | endswith($a)) | .browser_download_url' | head -n1); curl -fsSL \"$URL\" -o /usr/local/bin/ctop; chmod 755 /usr/local/bin/ctop",
+    "run": "ctop",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://github.com/bcicen/ctop"
+  },
+  {
+    "id": "lazydocker",
+    "name": "Docker 可视化管理",
+    "tool": "lazydocker",
+    "category": "Docker 工具",
+    "desc": "终端图形界面管理容器、日志、镜像和 Compose。",
+    "check": "command -v lazydocker",
+    "install_type": "script",
+    "install": "set -e; curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash",
+    "uninstall": "rm -f /usr/local/bin/lazydocker /root/.local/bin/lazydocker",
+    "upgrade": "curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash",
+    "run": "lazydocker",
+    "recommended": true,
+    "risk": "medium",
+    "homepage": "https://github.com/jesseduffield/lazydocker"
+  },
+  {
+    "id": "restic",
+    "name": "加密增量备份",
+    "tool": "restic",
+    "category": "备份工具",
+    "desc": "支持本地、SFTP、S3/R2 等目标的加密增量备份。",
+    "check": "command -v restic",
+    "install_type": "package",
+    "packages": {
+      "apt": "restic",
+      "dnf": "restic",
+      "yum": "restic",
+      "apk": "restic"
+    },
+    "run": "restic version",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://restic.net/"
+  },
+  {
+    "id": "borgbackup",
+    "name": "去重增量备份",
+    "tool": "borg",
+    "category": "备份工具",
+    "desc": "高效去重、压缩和加密的服务器备份工具。",
+    "check": "command -v borg",
+    "install_type": "package",
+    "packages": {
+      "apt": "borgbackup",
+      "dnf": "borgbackup",
+      "yum": "borgbackup",
+      "apk": "borgbackup"
+    },
+    "run": "borg --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://www.borgbackup.org/"
+  },
+  {
+    "id": "lynis",
+    "name": "服务器安全体检",
+    "tool": "lynis",
+    "category": "安全检查",
+    "desc": "检查 SSH、权限、内核、软件和常见安全配置。",
+    "check": "command -v lynis",
+    "install_type": "package",
+    "packages": {
+      "apt": "lynis",
+      "dnf": "lynis",
+      "yum": "lynis",
+      "apk": "lynis"
+    },
+    "run": "lynis show version",
+    "recommended": true,
+    "risk": "low",
+    "homepage": "https://cisofy.com/lynis/"
+  },
+  {
+    "id": "tailscale",
+    "name": "Tailscale 私网组网",
+    "tool": "tailscale",
+    "category": "远程组网",
+    "desc": "让多台服务器和设备通过加密私网直接互联。",
+    "check": "command -v tailscale",
+    "install_type": "script",
+    "install": "set -e; curl -fsSL https://tailscale.com/install.sh | sh",
+    "upgrade": "curl -fsSL https://tailscale.com/install.sh | sh",
+    "run": "tailscale status",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://tailscale.com/"
+  },
+  {
+    "id": "wireguard",
+    "name": "WireGuard VPN 工具",
+    "tool": "wg",
+    "category": "远程组网",
+    "desc": "管理 WireGuard 密钥、接口和隧道。",
+    "check": "command -v wg",
+    "install_type": "package",
+    "packages": {
+      "apt": "wireguard-tools",
+      "dnf": "wireguard-tools",
+      "yum": "wireguard-tools",
+      "apk": "wireguard-tools"
+    },
+    "run": "wg --version",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://www.wireguard.com/"
+  },
+  {
+    "id": "ddns-go",
+    "name": "DDNS-GO 动态域名",
+    "tool": "ddns-go",
+    "category": "远程组网",
+    "desc": "通过 Web 界面管理动态 DNS，支持多种 DNS 服务商。",
+    "check": "docker ps --format '{{.Names}}' 2>/dev/null | grep -qx ddns-go",
+    "install_type": "script",
+    "install": "set -e; command -v docker >/dev/null 2>&1 || { curl -fsSL https://get.docker.com | sh; systemctl enable --now docker >/dev/null 2>&1 || true; }; mkdir -p /opt/ddns-go; docker rm -f ddns-go >/dev/null 2>&1 || true; docker run -d --name ddns-go --restart=always --net=host -v /opt/ddns-go:/root jeessy/ddns-go",
+    "uninstall": "docker rm -f ddns-go >/dev/null 2>&1 || true",
+    "upgrade": "docker pull jeessy/ddns-go && docker rm -f ddns-go >/dev/null 2>&1 || true; docker run -d --name ddns-go --restart=always --net=host -v /opt/ddns-go:/root jeessy/ddns-go",
+    "recommended": false,
+    "risk": "medium",
+    "homepage": "https://github.com/jeessy2/ddns-go"
   }
 ]
