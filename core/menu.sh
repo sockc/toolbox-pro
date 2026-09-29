@@ -19,11 +19,11 @@ run_mod() {
 while true; do
   clear
   echo "=============================================="
-  echo "   Server Toolbox PRO  (Docker + System + SSH)"
+  echo "   Server Toolbox PRO  v$(cat "${INSTALL_DIR}/core/version.txt" 2>/dev/null || echo unknown)"
   echo "=============================================="
   echo "1) Docker 容器中心（50个容器 + Compose + 日志/进入/更新）"
   echo "2) 系统工具（BBR/Swap/日志）"
-  echo "3) 常用插件（配置化安装）"
+  echo "3) 插件中心（系统/网络/磁盘/Docker/备份）"
   echo "4) 下载工具（aria2/rclone/yt-dlp等）"
   echo "5) SSH 工具（改密/改端口/root登录/安全模式）"
   echo "6) 防火墙（开关/放行/关闭/查看）"
@@ -33,7 +33,7 @@ while true; do
   echo "10) Fail2ban 防护中心（SSH暴力破解封禁）"
   echo "0) 退出"
   echo
-  read -r -p "请输入选项 [0-6/9]: " c
+  read -r -p "请输入选项 [0-10]: " c
 
   case "$c" in
     1) run_mod "modules/docker/docker.sh" ;;
