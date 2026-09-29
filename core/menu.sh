@@ -21,7 +21,7 @@ while true; do
   echo "=============================================="
   echo "   Server Toolbox PRO  v$(cat "${INSTALL_DIR}/core/version.txt" 2>/dev/null || echo unknown)"
   echo "=============================================="
-  echo "1) Docker 容器中心（50个容器 + Compose + 日志/进入/更新）"
+  echo "1) Docker 容器中心（53个容器 + Compose + 日志/进入/更新）"
   echo "2) 系统工具（BBR/Swap/日志）"
   echo "3) 插件中心（系统/网络/磁盘/Docker/备份）"
   echo "4) 下载工具（aria2/rclone/yt-dlp等）"
