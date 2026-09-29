@@ -148,9 +148,15 @@ install_idx() {
   info "正在安装：$name"
   if [[ "$type" == "package" ]]; then
     packages="$(package_for_idx "$idx")"
-    pkg_install "$packages"
+    if ! pkg_install "$packages"; then
+      err "安装命令执行失败：$name"
+      return 1
+    fi
   else
-    run_script_field "$idx" install
+    if ! run_script_field "$idx" install; then
+      err "安装脚本执行失败：$name"
+      return 1
+    fi
   fi
 
   if is_installed "$idx"; then
@@ -170,12 +176,21 @@ upgrade_idx() {
 
   info "正在升级/重新安装：$name"
   if [[ -n "$upgrade" ]]; then
-    bash -lc "$upgrade"
+    if ! bash -lc "$upgrade"; then
+      err "升级命令执行失败：$name"
+      return 1
+    fi
   elif [[ "$type" == "package" ]]; then
     packages="$(package_for_idx "$idx")"
-    pkg_install "$packages"
+    if ! pkg_install "$packages"; then
+      err "升级命令执行失败：$name"
+      return 1
+    fi
   else
-    run_script_field "$idx" install
+    if ! run_script_field "$idx" install; then
+      err "重新安装失败：$name"
+      return 1
+    fi
   fi
 
   if is_installed "$idx"; then
@@ -203,10 +218,16 @@ uninstall_idx() {
   [[ "${yn,,}" == "y" ]] || return 0
 
   if [[ -n "$uninstall" ]]; then
-    bash -lc "$uninstall"
+    if ! bash -lc "$uninstall"; then
+      err "卸载命令执行失败：$name"
+      return 1
+    fi
   elif [[ "$type" == "package" ]]; then
     packages="$(package_for_idx "$idx")"
-    pkg_remove "$packages"
+    if ! pkg_remove "$packages"; then
+      err "卸载命令执行失败：$name"
+      return 1
+    fi
   else
     warn "该插件没有自动卸载规则，请手动处理"
     return 1
