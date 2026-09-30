@@ -60,7 +60,8 @@ force_update_all() {
     "modules/firewall/firewall.sh" \
     "modules/proxy/proxy.sh" \
     "modules/rescue/rescue.sh" \
-    "modules/fail2ban/fail2ban.sh"
+    "modules/fail2ban/fail2ban.sh" \
+    "modules/commands/commands.sh"
   do
     fetch "$m" "${INSTALL_DIR}/${m}" || true
     chmod +x "${INSTALL_DIR}/${m}" 2>/dev/null || true
