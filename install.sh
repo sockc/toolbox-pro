@@ -71,6 +71,7 @@ main() {
     "modules/proxy/proxy.sh"
     "modules/rescue/rescue.sh"
     "modules/fail2ban/fail2ban.sh"
+    "modules/commands/commands.sh"
   )
 
   for m in "${MODULES[@]}"; do
