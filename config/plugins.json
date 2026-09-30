@@ -855,5 +855,24 @@
     "recommended": false,
     "risk": "low",
     "homepage": "https://redis.io/docs/latest/develop/tools/cli/"
+  },
+  {
+    "id": "cron",
+    "name": "Cron 定时任务服务",
+    "tool": "crontab",
+    "category": "基础工具",
+    "desc": "提供 crontab 定时任务命令；命令工具中心的定时任务功能依赖它。",
+    "check": "command -v crontab",
+    "install_type": "package",
+    "packages": {
+      "apt": "cron",
+      "dnf": "cronie",
+      "yum": "cronie",
+      "apk": "dcron"
+    },
+    "run": "crontab -l 2>/dev/null || true",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://man7.org/linux/man-pages/man5/crontab.5.html"
   }
 ]
