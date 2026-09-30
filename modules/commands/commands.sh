@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 source /opt/server-toolbox/core/common.sh
 need_root
@@ -1001,16 +1001,22 @@ create_user_cmd() {
 
   if have useradd; then
     show_cmd "useradd -m -s /bin/bash $(q "$u")"
-    useradd -m -s /bin/bash "$u"
+    if ! useradd -m -s /bin/bash "$u"; then
+      err "创建用户失败"
+      return
+    fi
   elif have adduser; then
     show_cmd "adduser $(q "$u")"
-    adduser "$u"
+    if ! adduser "$u"; then
+      err "创建用户失败"
+      return
+    fi
   else
     err "系统没有 useradd/adduser"
     return
   fi
   ok "用户已创建。下面设置密码。"
-  passwd "$u"
+  passwd "$u" || warn "密码设置失败，可稍后重新设置"
 }
 
 change_user_password() {
@@ -1039,8 +1045,11 @@ grant_sudo() {
   read -r -p "确认把 $u 加入 $grp？(y/N): " yn || true
   [[ "${yn,,}" == "y" ]] || return
   show_cmd "usermod -aG $grp $(q "$u")"
-  usermod -aG "$grp" "$u"
-  ok "已加入 $grp"
+  if usermod -aG "$grp" "$u"; then
+    ok "已加入 $grp"
+  else
+    err "修改用户组失败"
+  fi
 }
 
 revoke_sudo() {
@@ -1074,7 +1083,7 @@ lock_user() {
   read -r -p "确认锁定 $u 的密码登录？(y/N): " yn || true
   [[ "${yn,,}" == "y" ]] || return
   show_cmd "passwd -l $(q "$u")"
-  passwd -l "$u"
+  if passwd -l "$u"; then ok "用户已锁定"; else err "锁定失败"; fi
 }
 
 unlock_user() {
@@ -1083,7 +1092,7 @@ unlock_user() {
   valid_username "$u" || { warn "用户名格式错误"; return; }
   user_exists "$u" || { warn "用户不存在"; return; }
   show_cmd "passwd -u $(q "$u")"
-  passwd -u "$u"
+  if passwd -u "$u"; then ok "用户已解锁"; else err "解锁失败"; fi
 }
 
 delete_user_cmd() {
@@ -1137,8 +1146,12 @@ change_file_mode() {
   read -r -p "确认 chmod $mode？(y/N): " yn || true
   [[ "${yn,,}" == "y" ]] || return
   show_cmd "chmod $mode $(q "$path")"
-  chmod "$mode" -- "$path"
-  ls -ld -- "$path" || true
+  if chmod "$mode" -- "$path"; then
+    ok "权限已修改"
+    ls -ld -- "$path" || true
+  else
+    err "chmod 失败"
+  fi
 }
 
 change_file_owner() {
@@ -1151,8 +1164,12 @@ change_file_owner() {
   read -r -p "确认 chown $owner？(y/N): " yn || true
   [[ "${yn,,}" == "y" ]] || return
   show_cmd "chown $(q "$owner") $(q "$path")"
-  chown "$owner" -- "$path"
-  ls -ld -- "$path" || true
+  if chown "$owner" -- "$path"; then
+    ok "属主已修改"
+    ls -ld -- "$path" || true
+  else
+    err "chown 失败"
+  fi
 }
 
 user_permission_menu() {
@@ -1196,6 +1213,7 @@ user_permission_menu() {
 # ============================================================
 
 show_root_cron() {
+  need_tool crontab "Cron/Crond" || return
   show_cmd "crontab -l"
   crontab -l 2>/dev/null || echo "当前 root 没有 crontab"
 }
@@ -1225,12 +1243,16 @@ append_cron_line() {
   crontab -l 2>/dev/null >"$tmp" || true
   printf '%s %s\n' "$schedule" "$cmd" >>"$tmp"
   show_cmd "(crontab -l; echo '$schedule <command>') | crontab -"
-  crontab "$tmp"
+  if crontab "$tmp"; then
+    ok "定时任务已添加"
+  else
+    err "写入 crontab 失败"
+  fi
   rm -f "$tmp"
-  ok "定时任务已添加"
 }
 
 add_cron_preset() {
+  need_tool crontab "Cron/Crond" || return
   local mode schedule="" cmd hour minute n weekday
   echo "选择频率："
   echo "1) 每天固定时间"
@@ -1288,6 +1310,7 @@ add_cron_preset() {
 }
 
 remove_cron_line() {
+  need_tool crontab "Cron/Crond" || return
   local lines choice tmp
   mapfile -t lines < <(crontab -l 2>/dev/null || true)
   if [[ "${#lines[@]}" -eq 0 ]]; then
@@ -1317,9 +1340,12 @@ remove_cron_line() {
     i=$((i+1))
   done
   show_cmd "crontab <删除指定行后的临时文件>"
-  crontab "$tmp"
+  if crontab "$tmp"; then
+    ok "已删除"
+  else
+    err "更新 crontab 失败"
+  fi
   rm -f "$tmp"
-  ok "已删除"
 }
 
 cron_menu() {
@@ -1742,10 +1768,14 @@ mysql_backup() {
   read -r -s -p "密码: " password || true
   echo
   show_cmd "MYSQL_PWD=*** mysqldump ... $(q "$db") | gzip > $(q "$out")"
-  MYSQL_PWD="$password" mysqldump -h "$host" -P "$port" -u "$user" --single-transaction --routines --triggers "$db" | gzip >"$out"
+  if MYSQL_PWD="$password" mysqldump -h "$host" -P "$port" -u "$user" --single-transaction --routines --triggers "$db" | gzip >"$out"; then
+    ok "备份完成"
+    ls -lh "$out"
+  else
+    err "MySQL/MariaDB 备份失败"
+    rm -f "$out"
+  fi
   unset password MYSQL_PWD 2>/dev/null || true
-  ok "备份完成"
-  ls -lh "$out"
 }
 
 postgres_connect_test() {
@@ -1784,10 +1814,14 @@ postgres_backup() {
   read -r -s -p "密码: " password || true
   echo
   show_cmd "PGPASSWORD=*** pg_dump -Fc ... -f $(q "$out") $(q "$db")"
-  PGPASSWORD="$password" pg_dump -h "$host" -p "$port" -U "$user" -Fc -f "$out" "$db"
+  if PGPASSWORD="$password" pg_dump -h "$host" -p "$port" -U "$user" -Fc -f "$out" "$db"; then
+    ok "备份完成"
+    ls -lh "$out"
+  else
+    err "PostgreSQL 备份失败"
+    rm -f "$out"
+  fi
   unset password PGPASSWORD 2>/dev/null || true
-  ok "备份完成"
-  ls -lh "$out"
 }
 
 redis_ping() {
