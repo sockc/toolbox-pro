@@ -779,5 +779,81 @@
     "recommended": false,
     "risk": "medium",
     "homepage": "https://github.com/jeessy2/ddns-go"
+  },
+  {
+    "id": "zip",
+    "name": "ZIP 压缩工具",
+    "tool": "zip",
+    "category": "基础工具",
+    "desc": "创建 ZIP 压缩包，配合 unzip 完成常见压缩/解压。",
+    "check": "command -v zip",
+    "install_type": "package",
+    "packages": {
+      "apt": "zip",
+      "dnf": "zip",
+      "yum": "zip",
+      "apk": "zip"
+    },
+    "run": "zip -v | head -n2",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://infozip.sourceforge.net/"
+  },
+  {
+    "id": "mysql-client",
+    "name": "MySQL/MariaDB 客户端",
+    "tool": "mysql / mysqldump",
+    "category": "数据库工具",
+    "desc": "连接 MySQL/MariaDB，并使用 mysqldump 做数据库备份。",
+    "check": "command -v mysql && command -v mysqldump",
+    "install_type": "package",
+    "packages": {
+      "apt": "default-mysql-client",
+      "dnf": "mariadb",
+      "yum": "mariadb",
+      "apk": "mariadb-client"
+    },
+    "run": "mysql --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://mariadb.com/kb/en/mariadb-command-line-client/"
+  },
+  {
+    "id": "postgres-client",
+    "name": "PostgreSQL 客户端",
+    "tool": "psql / pg_dump",
+    "category": "数据库工具",
+    "desc": "连接 PostgreSQL，并使用 pg_dump 做数据库备份。",
+    "check": "command -v psql && command -v pg_dump",
+    "install_type": "package",
+    "packages": {
+      "apt": "postgresql-client",
+      "dnf": "postgresql",
+      "yum": "postgresql",
+      "apk": "postgresql-client"
+    },
+    "run": "psql --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://www.postgresql.org/docs/current/app-psql.html"
+  },
+  {
+    "id": "redis-client",
+    "name": "Redis 客户端",
+    "tool": "redis-cli",
+    "category": "数据库工具",
+    "desc": "测试 Redis 连通性并执行常见 Redis 客户端操作。",
+    "check": "command -v redis-cli",
+    "install_type": "package",
+    "packages": {
+      "apt": "redis-tools",
+      "dnf": "redis",
+      "yum": "redis",
+      "apk": "redis"
+    },
+    "run": "redis-cli --version",
+    "recommended": false,
+    "risk": "low",
+    "homepage": "https://redis.io/docs/latest/develop/tools/cli/"
   }
 ]
