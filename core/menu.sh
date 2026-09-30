@@ -31,9 +31,10 @@ while true; do
   echo "8) 系统急救菜单（DNS/网络/磁盘/Docker/日志）"
   echo "9) 手动更新（从 GitHub 拉最新）"
   echo "10) Fail2ban 防护中心（SSH暴力破解封禁）"
+  echo "11) 命令工具中心（端口/进程/服务/DNS/文件/日志）"
   echo "0) 退出"
   echo
-  read -r -p "请输入选项 [0-10]: " c
+  read -r -p "请输入选项 [0-11]: " c
 
   case "$c" in
     1) run_mod "modules/docker/docker.sh" ;;
@@ -45,7 +46,8 @@ while true; do
     7) run_mod "modules/proxy/proxy.sh" ;;
     8) run_mod "modules/rescue/rescue.sh" ;;
     9) force_update_all; read -r -p "回车继续..." _ ;;
-    10) bash /opt/server-toolbox/modules/fail2ban/fail2ban.sh ;;
+    10) run_mod "modules/fail2ban/fail2ban.sh" ;;
+    11) run_mod "modules/commands/commands.sh" ;;
     0) echo "Bye 👋"; exit 0 ;;
     *) warn "无效选项"; sleep 1 ;;
   esac
